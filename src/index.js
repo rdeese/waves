@@ -1,5 +1,6 @@
 // (() => {
-let context;
+//
+const chroma = require('chroma-js')
 
 class Pitch {
   static noteNumbers() {
@@ -21,7 +22,7 @@ class Pitch {
   }
 
   static frequencyFromNumber(noteNumber) {
-    return 440 * Math.pow(1.059463, noteNumber - 49)
+    return /* 440 */ 1 * Math.pow(1.059463, noteNumber - 49)
   }
 
   constructor(arg) {
@@ -38,6 +39,7 @@ class Pitch {
     }
 
     this.frequency = Pitch.frequencyFromNumber(this.number)
+    this.color = 'black'//chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
   }
 }
 
@@ -58,11 +60,34 @@ class Point {
   static fromEvent (event) {
     return new Point(event.clientX, event.clientY)
   }
+}
 
-  static randomOnCanvas () {
-    return new Point(Math.random()*window.innerWidth, Math.random()*window.innerHeight)
+class Canvas {
+  constructor(canvasElement) {
+    this.canvas = canvasElement
+    this.context = this.canvas.getContext('2d')
+    this.context.globalCompositeOperation = 'normal'
+  }
+
+  center() {
+    return new Point(this.canvas.width/2, this.canvas.height/2)
+  }
+
+  randomPoint() {
+    return new Point(Math.random()*this.canvas.width, Math.random()*this.canvas.height)
+  }
+
+  drawPitch(pitch) {
+    this.context.fillStyle = pitch.color
+    for (let i = 0; i < 120000; i++) {
+      let dot = this.randomPoint()
+      if (Math.sin(dot.distanceFrom(this.center())*pitch.frequency) > Random.inRange(-1, 1)) {
+        this.context.fillRect(dot.x, dot.y, 1, 1)
+      }
+    }
   }
 }
+
 
 const Random = {
   inRange: (low, high) => {
@@ -70,46 +95,30 @@ const Random = {
   }
 }
 
-const main = () => {
-  const canvas = document.getElementById('canvas')
-  context = canvas.getContext('2d')
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
-  let lastPoint = null
-  let secondLastPoint = null
+const appendCanvas = (noteNames, width, height) => {
+  const canvasElement = document.createElement('canvas')
+  canvasElement.style = 'margin: 10px'
+  document.body.appendChild(canvasElement)
+  canvasElement.width = width
+  canvasElement.height = height
+  const canvas = new Canvas(canvasElement)
 
-  const canvasCenter = new Point(window.innerWidth/2, window.innerHeight/2)
-  const leftCenter = canvasCenter.offset(-200, 0)
-  const rightCenter = canvasCenter.offset(200, 0)
-
-  context.fillStyle = "#FF0000"
-  for (let i = 0; i < 200000; i++) {
-    let dot = Point.randomOnCanvas()
-    if (Math.sin(dot.distanceFrom(leftCenter)/10) > Random.inRange(-3, 1)) {
-      context.fillRect(dot.x, dot.y, 1, 1)
-    }
-  }
-
-  context.fillStyle = "#0000FF"
-  for (let i = 0; i < 200000; i++) {
-    let dot = Point.randomOnCanvas()
-    if (Math.sin(dot.distanceFrom(rightCenter)/10) > Random.inRange(-3, 1)) {
-      context.fillRect(dot.x, dot.y, 1, 1)
-    }
-  }
-
-  canvas.onclick = (event) => {
-    let point = Point.fromEvent(event)
-    context.fillText(`${point.x}, ${point.y}`, point.x, point.y);
-    if (lastPoint && secondLastPoint) {
-      context.moveTo(lastPoint.x, lastPoint.y)
-      context.quadraticCurveTo(point.x, point.y, secondLastPoint.x, secondLastPoint.y)
-      context.stroke()
-    }
-    secondLastPoint = lastPoint
-    lastPoint = point;
+  for (let i in noteNames) {
+    const pitch = new Pitch(noteNames[i])
+    canvas.drawPitch(pitch)
   }
 }
 
-window.onload = main;
-// })();
+const main = () => {
+  const canvasList = Object.keys(Pitch.noteNumbers()).map((note) => { return ['A', note] })
+  
+  const limitingDimension = Math.min(window.innerWidth, window.innerHeight)/2
+  const width = limitingDimension - limitingDimension / 5
+  const height = width
+
+  for (let i in canvasList) {
+    appendCanvas(canvasList[i], width, height)
+  }
+}
+
+window.onload = main
