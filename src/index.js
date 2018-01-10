@@ -39,7 +39,7 @@ class Pitch {
     }
 
     this.frequency = Pitch.frequencyFromNumber(this.number)
-    this.color = 'black'//chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
+    this.color = 'black' //chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
   }
 }
 
@@ -66,7 +66,6 @@ class Canvas {
   constructor(canvasElement) {
     this.canvas = canvasElement
     this.context = this.canvas.getContext('2d')
-    this.context.globalCompositeOperation = 'normal'
   }
 
   center() {
@@ -79,10 +78,10 @@ class Canvas {
 
   drawPitch(pitch) {
     this.context.fillStyle = pitch.color
-    for (let i = 0; i < 120000; i++) {
+    for (let i = 0; i < 100000; i++) {
       let dot = this.randomPoint()
       if (Math.sin(dot.distanceFrom(this.center())*pitch.frequency) > Random.inRange(-1, 1)) {
-        this.context.fillRect(dot.x, dot.y, 1, 1)
+        this.context.fillRect(dot.x, dot.y, 0.4, 0.4)
       }
     }
   }
