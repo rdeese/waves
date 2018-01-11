@@ -1,0 +1,45 @@
+.key-object {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  color: black;
+  background-color: #ECECEC;
+  width: 15px;
+  height: 30px;
+
+  margin-left: 1px;
+  margin-right: 1px;
+
+  border-radius: 2px;
+}
+
+.key-object.sharp {
+  color: white;
+  background-color: #333333;
+  margin-bottom: 15px;
+}
+
+.key-name {
+  position: absolute;
+  bottom: 0;
+  padding: 2px;
+  text-align: center;
+}
+
+.note-name {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: black;
+  margin-top: 5px;
+  visibility: hidden;
+}
+
+.sharp .note-name {
+  background-color: white;
+}
+
+.key-object.pressed .note-name {
+  visibility: visible;
+}
