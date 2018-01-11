@@ -10,6 +10,7 @@ const Synth = require('./Synth')
 const main = () => {
   const width = window.innerWidth
   const height = window.innerHeight
+
   const keyContainer = document.getElementById('key-container')
   keyContainer.style.width = width
 
@@ -60,16 +61,15 @@ const main = () => {
   for (keyName in keyMap) {
     const pitch = keyMap[keyName]
     const canvas = Canvas.fromPitches([pitch], width, height)
-    canvas.canvas.style.display = 'none'
-    canvas.canvas.style.position = 'absolute'
+    canvas.html.style.position = 'absolute'
     canvasses[pitch.note] = canvas
-    canvasContainer.appendChild(canvas.canvas)
+    canvasContainer.appendChild(canvas.html)
 
     const key = new Key(keyName, pitch, () => {
-      canvas.canvas.style.display = 'inherit'
+      canvas.html.style.visibility = 'visible'
       synth.play(pitch)
     }, () => {
-      canvas.canvas.style.display = 'none'
+      canvas.html.style.visibility = 'hidden'
       synth.stop(pitch)
     })
 
@@ -89,6 +89,24 @@ const main = () => {
       keyMap[event.key].up()
     }
   })
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      for (key in canvasses) {
+        canvasses[key].html.style.visibility = 'hidden'
+        const loadingElement = document.getElementById('loading')
+        loadingElement.classList.add('hidden')
+        loadingElement.addEventListener('animationend', () => {
+          loadingElement.style.display = 'none'
+        })
+      }
+    })
+  })
 }
 
-window.onload = main
+window.addEventListener('load', () => {
+  const loadingElement = document.getElementById('loading')
+  loadingElement.style.width = window.innerWidth;
+  loadingElement.style.height = window.innerHeight;
+  setTimeout(main, 100)
+})

@@ -1,3 +1,4 @@
+require('./canvas.less')
 const Point = require('./Point')
 
 const Random = {
@@ -8,7 +9,9 @@ const Random = {
 
 class Canvas {
   constructor(canvasElement) {
+    this.html = document.createElement('div')
     this.canvas = canvasElement
+    this.html.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
   }
 

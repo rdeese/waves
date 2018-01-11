@@ -553,12 +553,13 @@ __webpack_require__(4)
 const Point = __webpack_require__(2)
 const Pitch = __webpack_require__(7)
 const Canvas = __webpack_require__(10)
-const Key = __webpack_require__(11)
-const Synth = __webpack_require__(14)
+const Key = __webpack_require__(13)
+const Synth = __webpack_require__(16)
 
 const main = () => {
   const width = window.innerWidth
   const height = window.innerHeight
+
   const keyContainer = document.getElementById('key-container')
   keyContainer.style.width = width
 
@@ -609,16 +610,15 @@ const main = () => {
   for (keyName in keyMap) {
     const pitch = keyMap[keyName]
     const canvas = Canvas.fromPitches([pitch], width, height)
-    canvas.canvas.style.display = 'none'
-    canvas.canvas.style.position = 'absolute'
+    canvas.html.style.position = 'absolute'
     canvasses[pitch.note] = canvas
-    canvasContainer.appendChild(canvas.canvas)
+    canvasContainer.appendChild(canvas.html)
 
     const key = new Key(keyName, pitch, () => {
-      canvas.canvas.style.display = 'inherit'
+      canvas.html.style.visibility = 'visible'
       synth.play(pitch)
     }, () => {
-      canvas.canvas.style.display = 'none'
+      canvas.html.style.visibility = 'hidden'
       synth.stop(pitch)
     })
 
@@ -638,9 +638,27 @@ const main = () => {
       keyMap[event.key].up()
     }
   })
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      for (key in canvasses) {
+        canvasses[key].html.style.visibility = 'hidden'
+        const loadingElement = document.getElementById('loading')
+        loadingElement.classList.add('hidden')
+        loadingElement.addEventListener('animationend', () => {
+          loadingElement.style.display = 'none'
+        })
+      }
+    })
+  })
 }
 
-window.onload = main
+window.addEventListener('load', () => {
+  const loadingElement = document.getElementById('loading')
+  loadingElement.style.width = window.innerWidth;
+  loadingElement.style.height = window.innerHeight;
+  setTimeout(main, 100)
+})
 
 
 /***/ }),
@@ -683,7 +701,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "body {\n  margin: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n  font-family: monospace;\n}\n#canvas-container {\n  position: relative;\n}\n#key-container {\n  position: absolute;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n}\n", ""]);
+exports.push([module.i, "body {\n  margin: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n  font-family: monospace;\n}\n#loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n#loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n#canvas-container {\n  position: relative;\n}\n#key-container {\n  position: absolute;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n}\n", ""]);
 
 // exports
 
@@ -3626,6 +3644,7 @@ module.exports = function(module) {
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
+__webpack_require__(11)
 const Point = __webpack_require__(2)
 
 const Random = {
@@ -3636,7 +3655,9 @@ const Random = {
 
 class Canvas {
   constructor(canvasElement) {
+    this.html = document.createElement('div')
     this.canvas = canvasElement
+    this.html.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
   }
 
@@ -3683,7 +3704,52 @@ module.exports = Canvas
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(12)
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(12);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// Prepare cssTransformation
+var transform;
+
+var options = {"hmr":true}
+options.transform = transform
+// add the styles to the DOM
+var update = __webpack_require__(1)(content, options);
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./canvas.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./canvas.less");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(0)(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(14)
 
 class Key {
   constructor(key, pitch, onDown, onUp) {
@@ -3723,13 +3789,13 @@ module.exports = Key
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(13);
+var content = __webpack_require__(15);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -3754,7 +3820,7 @@ if(false) {
 }
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -3768,7 +3834,7 @@ exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports) {
 
 class Synth {
