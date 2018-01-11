@@ -583,23 +583,24 @@ const main = () => {
   // }
 
   const keyMap = {
-    'z': new Pitch('C'),
-    's': new Pitch('C#'),
-    'x': new Pitch('D'),
-    'd': new Pitch('D#'),
-    'c': new Pitch('E'),
-    'v': new Pitch('F'),
-    'g': new Pitch('F#'),
-    'b': new Pitch('G'),
-    'h': new Pitch('G#'),
-    'n': new Pitch('A'),
-    'j': new Pitch('A#'),
-    'm': new Pitch('B'),
-    ',': new Pitch('c'),
-    'l': new Pitch('c#'),
-    '.': new Pitch('d'),
-    ';': new Pitch('d#'),
-    '/': new Pitch('e')
+    'a': new Pitch('C'),
+    'w': new Pitch('C#'),
+    's': new Pitch('D'),
+    'e': new Pitch('D#'),
+    'd': new Pitch('E'),
+    'f': new Pitch('F'),
+    't': new Pitch('F#'),
+    'g': new Pitch('G'),
+    'y': new Pitch('G#'),
+    'h': new Pitch('A'),
+    'u': new Pitch('A#'),
+    'j': new Pitch('B'),
+    'k': new Pitch('c'),
+    'o': new Pitch('c#'),
+    'l': new Pitch('d'),
+    'p': new Pitch('d#'),
+    ';': new Pitch('e'),
+    "'": new Pitch('f'),
   }
 
   const canvasses = {}
@@ -807,7 +808,8 @@ class Pitch {
       'c#': 53,
       'd': 54,
       'd#': 55,
-      'e': 56
+      'e': 56,
+      'f': 57
     }
   }
 
