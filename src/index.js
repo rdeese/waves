@@ -119,9 +119,8 @@ const Random = {
 
 
 const main = () => {
-  const limitingDimension = Math.min(window.innerWidth, window.innerHeight)
-  const width = limitingDimension - limitingDimension / 5
-  const height = width
+  const width = window.innerWidth
+  const height = window.innerHeight
   const canvasContainer = document.getElementById('canvas-container')
   canvasContainer.style.width = width
   canvasContainer.style.height = height
