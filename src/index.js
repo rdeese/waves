@@ -95,6 +95,19 @@ class Canvas {
       }
     }
   }
+
+  static fromPitches(pitches, width, height) {
+    const canvasElement = document.createElement('canvas')
+    canvasElement.width = width
+    canvasElement.height = height
+    const canvas = new Canvas(canvasElement)
+
+    for (let i in pitches) {
+      canvas.drawPitch(pitches[i])
+    }
+
+    return canvas
+  }
 }
 
 
@@ -104,33 +117,14 @@ const Random = {
   }
 }
 
-const appendCanvas = (noteNames, width, height) => {
-  const canvasElement = document.createElement('canvas')
-  canvasElement.style = 'margin: 10px'
-  document.body.appendChild(canvasElement)
-  canvasElement.width = width
-  canvasElement.height = height
-  const canvas = new Canvas(canvasElement)
-
-  for (let i in noteNames) {
-    const pitch = new Pitch(noteNames[i])
-    canvas.drawPitch(pitch)
-  }
-}
 
 const main = () => {
   const limitingDimension = Math.min(window.innerWidth, window.innerHeight)
   const width = limitingDimension - limitingDimension / 5
   const height = width
-
-  const canvasElement = document.getElementById('canvas')
-  canvasElement.width = width
-  canvasElement.height = height
-  const canvas = new Canvas(canvasElement)
-
-  const activePitches = []
-  const activeOscillators = {
-  }
+  const canvasContainer = document.getElementById('canvas-container')
+  canvasContainer.style.width = width
+  canvasContainer.style.height = height
 
   const keyMap = {
     'a': new Pitch('A'),
@@ -148,25 +142,35 @@ const main = () => {
     'k': new Pitch("A'")
   }
 
+  const canvasses = {}
+  const activeOscillators = {}
+
   const audioContext = new AudioContext()
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key in keyMap && !_.includes(activePitches, keyMap[event.key])) {
-      const newPitch = keyMap[event.key]
-      canvas.clear()
-      activePitches.push(newPitch)
-      for (let i in activePitches) {
-        canvas.drawPitch(activePitches[i])
-      }
+  for (key in keyMap) {
+    const pitch = keyMap[key]
+    const canvas = Canvas.fromPitches([pitch], width, height)
+    console.log(canvas)
+    canvas.canvas.style.display = 'none'
+    canvas.canvas.style.position = 'absolute'
+    canvasses[pitch.note] = canvas
+    canvasContainer.appendChild(canvas.canvas)
 
-      let oscillator = activeOscillators[newPitch.note]
-      if (!oscillator) {
-        oscillator = audioContext.createOscillator()
-        oscillator.type = 'triangle'
-        activeOscillators[newPitch.note] = oscillator
-        oscillator.frequency.value = newPitch.frequency
-        oscillator.start()
-      }
+    const oscillator = audioContext.createOscillator()
+    oscillator.type = 'triangle'
+    oscillator.frequency.value = pitch.frequency
+    oscillator.start()
+    activeOscillators[pitch.note] = oscillator
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key in keyMap) {
+      const newPitch = keyMap[event.key]
+
+      const canvas = canvasses[newPitch.note]
+      canvas.canvas.style.display = 'inherit'
+
+      const oscillator = activeOscillators[newPitch.note]
       oscillator.connect(audioContext.destination)
     }
   })
@@ -175,12 +179,9 @@ const main = () => {
     if (event.key in keyMap) {
       const targetPitch = keyMap[event.key]
 
-      canvas.clear()
-      _.pull(activePitches, targetPitch)
-      for (let i in activePitches) {
-        canvas.drawPitch(activePitches[i])
-      }
-     
+      const canvas = canvasses[targetPitch.note]
+      canvas.canvas.style.display = 'none'
+
       const oscillator = activeOscillators[targetPitch.note]
       oscillator.disconnect()
     }
