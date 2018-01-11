@@ -10,6 +10,7 @@ const Random = {
 class Canvas {
   constructor(canvasElement) {
     this.html = document.createElement('div')
+    this.html.classList.add('canvas-object')
     this.canvas = canvasElement
     this.html.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
@@ -48,6 +49,17 @@ class Canvas {
     }
 
     return canvas
+  }
+
+  // Potentially for another class
+  show() {
+    this.html.classList.remove('hidden')
+    this.html.classList.add('visible')
+  }
+
+  hide() {
+    this.html.classList.remove('visible')
+    this.html.classList.add('hidden')
   }
 }
 

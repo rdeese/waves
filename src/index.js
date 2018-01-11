@@ -18,22 +18,6 @@ const main = () => {
   canvasContainer.style.width = width
   canvasContainer.style.height = height
 
-  // const keyMap = {
-  //   'a': new Pitch('A'),
-  //   'w': new Pitch('A#'),
-  //   's': new Pitch('B'),
-  //   'd': new Pitch('C'),
-  //   'r': new Pitch('C#'),
-  //   'f': new Pitch('D'),
-  //   't': new Pitch('D#'),
-  //   'g': new Pitch('E'),
-  //   'h': new Pitch('F'),
-  //   'u': new Pitch('F#'),
-  //   'j': new Pitch('G'),
-  //   'i': new Pitch('G#'),
-  //   'k': new Pitch("A'")
-  // }
-
   const keyMap = {
     'a': new Pitch('C'),
     'w': new Pitch('C#'),
@@ -61,15 +45,14 @@ const main = () => {
   for (keyName in keyMap) {
     const pitch = keyMap[keyName]
     const canvas = Canvas.fromPitches([pitch], width, height)
-    canvas.html.style.position = 'absolute'
     canvasses[pitch.note] = canvas
     canvasContainer.appendChild(canvas.html)
 
     const key = new Key(keyName, pitch, () => {
-      canvas.html.style.visibility = 'visible'
+      canvas.show()
       synth.play(pitch)
     }, () => {
-      canvas.html.style.visibility = 'hidden'
+      canvas.hide()
       synth.stop(pitch)
     })
 
@@ -93,7 +76,7 @@ const main = () => {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       for (key in canvasses) {
-        canvasses[key].html.style.visibility = 'hidden'
+        canvasses[key].hide()
         const loadingElement = document.getElementById('loading')
         loadingElement.classList.add('hidden')
         loadingElement.addEventListener('animationend', () => {

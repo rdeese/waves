@@ -1,0 +1,36 @@
+/* Not useful at the moment, or maybe ever;
+   the browser can't render the transitions at
+   the requested speed and it looks chunky */
+@canvasVisibilityTransitionDuration: 0.05s;
+
+@keyframes vanish {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.canvas-object {
+  position: absolute;
+
+  &.hidden {
+    display: none
+  }
+
+  &.visible {
+    display: block
+  }
+}
