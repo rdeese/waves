@@ -1,4 +1,4 @@
-require('./key.css')
+require('./key.less')
 
 class Key {
   constructor(key, pitch, onDown, onUp) {

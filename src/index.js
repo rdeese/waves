@@ -1,6 +1,6 @@
 // (() => {
 //
-require('./app.css')
+require('./app.less')
 const Point = require('./Point')
 const Pitch = require('./Pitch')
 const Canvas = require('./Canvas')
