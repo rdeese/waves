@@ -4,25 +4,31 @@ class Synth {
     this.oscillators = {}
   }
 
-  _getOscillator(pitch) {
-    let oscillator = this.oscillators[pitch.note]
-    if (!oscillator) {
-      oscillator = this.audioContext.createOscillator()
+  _getGainNode(pitch) {
+    let gainNode = this.oscillators[pitch.note]
+    if (!gainNode) {
+      const oscillator = this.audioContext.createOscillator()
       oscillator.type = 'triangle'
-      oscillator.frequency.value = pitch.frequency
+      oscillator.frequency.setValueAtTime(pitch.frequency, this.audioContext.currentTime)
       oscillator.start()
-      this.oscillators[pitch.note] = oscillator
+      gainNode = this.audioContext.createGain()
+      gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
+      oscillator.connect(gainNode)
+      gainNode.connect(this.audioContext.destination)
+      this.oscillators[pitch.note] = gainNode
     }
 
-    return oscillator
+    return gainNode
   }
 
   play(pitch) {
-    this._getOscillator(pitch).connect(this.audioContext.destination)
+    const gainNode = this._getGainNode(pitch)
+    gainNode.gain.setTargetAtTime(1, this.audioContext.currentTime, 0.015)
   }
 
   stop(pitch) {
-    this._getOscillator(pitch).disconnect()
+    const gainNode = this._getGainNode(pitch)
+    gainNode.gain.setTargetAtTime(0, this.audioContext.currentTime, 0.015)
   }
 }
 
