@@ -46,7 +46,11 @@ const main = () => {
     'n': new Pitch('A'),
     'j': new Pitch('A#'),
     'm': new Pitch('B'),
-    ',': new Pitch("C'")
+    ',': new Pitch('c'),
+    'l': new Pitch('c#'),
+    '.': new Pitch('d'),
+    ';': new Pitch('d#'),
+    '/': new Pitch('e')
   }
 
   const canvasses = {}

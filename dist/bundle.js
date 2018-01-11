@@ -566,20 +566,40 @@ const main = () => {
   canvasContainer.style.width = width
   canvasContainer.style.height = height
 
+  // const keyMap = {
+  //   'a': new Pitch('A'),
+  //   'w': new Pitch('A#'),
+  //   's': new Pitch('B'),
+  //   'd': new Pitch('C'),
+  //   'r': new Pitch('C#'),
+  //   'f': new Pitch('D'),
+  //   't': new Pitch('D#'),
+  //   'g': new Pitch('E'),
+  //   'h': new Pitch('F'),
+  //   'u': new Pitch('F#'),
+  //   'j': new Pitch('G'),
+  //   'i': new Pitch('G#'),
+  //   'k': new Pitch("A'")
+  // }
+
   const keyMap = {
-    'a': new Pitch('A'),
-    'w': new Pitch('A#'),
-    's': new Pitch('B'),
-    'd': new Pitch('C'),
-    'r': new Pitch('C#'),
-    'f': new Pitch('D'),
-    't': new Pitch('D#'),
-    'g': new Pitch('E'),
-    'h': new Pitch('F'),
-    'u': new Pitch('F#'),
-    'j': new Pitch('G'),
-    'i': new Pitch('G#'),
-    'k': new Pitch("A'")
+    'z': new Pitch('C'),
+    's': new Pitch('C#'),
+    'x': new Pitch('D'),
+    'd': new Pitch('D#'),
+    'c': new Pitch('E'),
+    'v': new Pitch('F'),
+    'g': new Pitch('F#'),
+    'b': new Pitch('G'),
+    'h': new Pitch('G#'),
+    'n': new Pitch('A'),
+    'j': new Pitch('A#'),
+    'm': new Pitch('B'),
+    ',': new Pitch('c'),
+    'l': new Pitch('c#'),
+    '.': new Pitch('d'),
+    ';': new Pitch('d#'),
+    '/': new Pitch('e')
   }
 
   const canvasses = {}
@@ -643,8 +663,8 @@ if(content.locals) module.exports = content.locals;
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!./app.css", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!./app.css");
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./app.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./app.less");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -662,7 +682,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "body {\n  margin: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n  font-family: monospace;\n}\n\n#canvas-container {\n  position: relative;\n}\n\n#key-container {\n  position: absolute;\n  bottom: 0;\n  z-index: 100;\n\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n\n  height: 100px;\n}\n", ""]);
+exports.push([module.i, "body {\n  margin: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n  font-family: monospace;\n}\n#canvas-container {\n  position: relative;\n}\n#key-container {\n  position: absolute;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n}\n", ""]);
 
 // exports
 
@@ -771,9 +791,6 @@ const chroma = __webpack_require__(8)
 class Pitch {
   static noteNumbers() {
     return {
-      'A': 37,
-      'A#': 38,
-      'B': 39,
       'C': 40,
       'C#': 41,
       'D': 42,
@@ -783,7 +800,14 @@ class Pitch {
       'F#': 46,
       'G': 47,
       'G#': 48,
-      "A'": 49
+      'A': 49,
+      'A#': 50,
+      'B': 51,
+      'c': 52,
+      'c#': 53,
+      'd': 54,
+      'd#': 55,
+      'e': 56
     }
   }
 
@@ -3717,8 +3741,8 @@ if(content.locals) module.exports = content.locals;
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!./key.css", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!./key.css");
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./key.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./key.less");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -3736,7 +3760,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\n  align-items: center;\n  flex-direction: column;\n  color: black;\n  background-color: #ECECEC;\n  width: 15px;\n  height: 30px;\n\n  margin-left: 1px;\n  margin-right: 1px;\n\n  border-radius: 2px;\n}\n\n.key-object.sharp {\n  color: white;\n  background-color: #333333;\n  margin-bottom: 15px;\n}\n\n.key-name {\n  position: absolute;\n  bottom: 0;\n  padding: 2px;\n  text-align: center;\n}\n\n.note-name {\n  width: 8px;\n  height: 8px;\n  border-radius: 4px;\n  background-color: black;\n  margin-top: 5px;\n  visibility: hidden;\n}\n\n.sharp .note-name {\n  background-color: white;\n}\n\n.key-object.pressed .note-name {\n  visibility: visible;\n}\n", ""]);
+exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\n  align-items: center;\n  flex-direction: column;\n  color: #333333;\n  background-color: #ECECEC;\n  width: 18px;\n  height: 40px;\n  font-size: 1.2em;\n  margin-left: 1px;\n  margin-right: 1px;\n  border-radius: 2px;\n}\n.key-object.sharp {\n  color: #ECECEC;\n  background-color: #333333;\n  margin-bottom: 15px;\n}\n.key-object.sharp .note-name {\n  background-color: #ECECEC;\n}\n.key-object.pressed .note-name {\n  visibility: visible;\n}\n.key-name {\n  position: absolute;\n  bottom: 0;\n  padding: 2px;\n  text-align: center;\n}\n.note-name {\n  width: 10px;\n  height: 10px;\n  border-radius: 5px;\n  background-color: #333333;\n  margin-top: 7px;\n  visibility: hidden;\n}\n", ""]);
 
 // exports
 
