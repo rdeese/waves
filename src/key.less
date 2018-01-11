@@ -1,23 +1,36 @@
+@darkGrey: #333333;
+@lightGrey: #ECECEC;
+
 .key-object {
   position: relative;
   display: flex;
   align-items: center;
   flex-direction: column;
-  color: black;
-  background-color: #ECECEC;
-  width: 15px;
-  height: 30px;
+  color: @darkGrey;
+  background-color: @lightGrey;
+  width: 18px;
+  height: 40px;
+
+  font-size: 1.2em;
 
   margin-left: 1px;
   margin-right: 1px;
 
   border-radius: 2px;
-}
 
-.key-object.sharp {
-  color: white;
-  background-color: #333333;
-  margin-bottom: 15px;
+  &.sharp {
+    color: @lightGrey;
+    background-color: @darkGrey;
+    margin-bottom: 15px;
+
+    .note-name {
+      background-color: @lightGrey;
+    }
+  }
+
+  &.pressed .note-name {
+    visibility: visible;
+  }
 }
 
 .key-name {
@@ -28,18 +41,10 @@
 }
 
 .note-name {
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background-color: black;
-  margin-top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: @darkGrey;
+  margin-top: 7px;
   visibility: hidden;
-}
-
-.sharp .note-name {
-  background-color: white;
-}
-
-.key-object.pressed .note-name {
-  visibility: visible;
 }
