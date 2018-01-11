@@ -3,9 +3,6 @@ const chroma = require('chroma-js')
 class Pitch {
   static noteNumbers() {
     return {
-      'A': 37,
-      'A#': 38,
-      'B': 39,
       'C': 40,
       'C#': 41,
       'D': 42,
@@ -15,7 +12,10 @@ class Pitch {
       'F#': 46,
       'G': 47,
       'G#': 48,
-      "A'": 49
+      'A': 49,
+      'A#': 50,
+      'B': 51,
+      "C'": 52
     }
   }
 
