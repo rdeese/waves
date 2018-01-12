@@ -21,7 +21,7 @@ class Instrument {
     this.loadingElement.classList.add('loading')
     this.loadingElement.style.width = window.innerWidth;
     this.loadingElement.style.height = window.innerHeight;
-    this.loadingElement.innerText = 'hello! please stand by...'
+    this.loadingElement.innerText = 'loading instrument...'
     this.html.appendChild(this.loadingElement)
 
     this.keyContainer = document.createElement('div')

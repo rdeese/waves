@@ -31,7 +31,7 @@ class Canvas {
 
   drawPitch(pitch) {
     this.context.fillStyle = this.useColor ? pitch.color : 'black'
-    for (let i = 0; i < 800000; i++) {
+    for (let i = 0; i < 80000; i++) {
       let dot = this.randomPoint()
       if (Math.sin(dot.distanceFrom(this.center())*pitch.visualFrequency) > Random.inRange(-1, 1)) {
         this.context.fillRect(dot.x, dot.y, 0.8, 0.8)

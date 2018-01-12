@@ -614,7 +614,7 @@ class Canvas {
 
   drawPitch(pitch) {
     this.context.fillStyle = this.useColor ? pitch.color : 'black'
-    for (let i = 0; i < 800000; i++) {
+    for (let i = 0; i < 80000; i++) {
       let dot = this.randomPoint()
       if (Math.sin(dot.distanceFrom(this.center())*pitch.visualFrequency) > Random.inRange(-1, 1)) {
         this.context.fillRect(dot.x, dot.y, 0.8, 0.8)
@@ -746,7 +746,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: fixed;\n  bottom: 8px;\n  z-index: 100;\n  height: 25px;\n  opacity: 0.6;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
+exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: fixed;\n  bottom: 8px;\n  z-index: 100;\n  height: 25px;\n  opacity: 0.6;\n  cursor: pointer;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
 
 // exports
 
@@ -1301,7 +1301,7 @@ class Instrument {
     this.loadingElement.classList.add('loading')
     this.loadingElement.style.width = window.innerWidth;
     this.loadingElement.style.height = window.innerHeight;
-    this.loadingElement.innerText = 'hello! please stand by...'
+    this.loadingElement.innerText = 'loading instrument...'
     this.html.appendChild(this.loadingElement)
 
     this.keyContainer = document.createElement('div')
