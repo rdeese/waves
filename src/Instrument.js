@@ -54,7 +54,7 @@ class Instrument {
       'l': new Pitch('d'),
       'p': new Pitch('d#'),
       ';': new Pitch('e'),
-      "'": new Pitch('f'),
+      "'": new Pitch('f')
     }
 
     const canvases = {}
@@ -127,7 +127,7 @@ class Instrument {
   deactivate() {
     this.active = false
     for (let keyName in this.keyMap) {
-      this.keyMap[event.key].up()
+      this.keyMap[keyName].up()
     }
   }
 }

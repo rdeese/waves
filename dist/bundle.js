@@ -670,23 +670,17 @@ const main = () => {
   document.body.appendChild(instrument.html)
   instrument.html.style.display = 'none'
 
-  const galleryArrow = document.createElement('div')
-  galleryArrow.classList.add('arrow', 'left')
-  galleryArrow.innerText = 'view gallery'
-  galleryArrow.addEventListener('click', () => {
+  let onGallery = true;
+
+  const showGallery = () => {
     instrument.html.style.display = 'none'
     gallery.html.style.display = 'flex'
     if (instrument.initialized) {
       instrument.deactivate()
     }
-  })
-  document.body.appendChild(galleryArrow)
+  }
 
-  const instrumentArrow = document.createElement('div')
-  instrumentArrow.classList.add('arrow', 'right')
-  instrumentArrow.innerText = 'play instrument'
-  document.body.appendChild(instrumentArrow)
-  instrumentArrow.addEventListener('click', () => {
+  const showInstrument = () => {
     gallery.html.style.display = 'none'
     instrument.html.style.display = 'flex'
     if (!instrument.initialized) {
@@ -696,7 +690,23 @@ const main = () => {
     } else {
       instrument.activate()
     }
+  }
+
+  const galleryArrow = document.createElement('div')
+  galleryArrow.classList.add('arrow', 'right')
+  galleryArrow.innerText = 'play instrument'
+  galleryArrow.addEventListener('click', () => {
+    if (onGallery) {
+      showInstrument()
+      galleryArrow.innerText = 'view gallery'
+      onGallery = false
+    } else {
+      showGallery()
+      galleryArrow.innerText = 'play instrument'
+      onGallery = true
+    }
   })
+  document.body.appendChild(galleryArrow)
 
   setTimeout(() => {
     gallery.initialize()
@@ -1334,7 +1344,7 @@ class Instrument {
       'l': new Pitch('d'),
       'p': new Pitch('d#'),
       ';': new Pitch('e'),
-      "'": new Pitch('f'),
+      "'": new Pitch('f')
     }
 
     const canvases = {}
@@ -1407,7 +1417,7 @@ class Instrument {
   deactivate() {
     this.active = false
     for (let keyName in this.keyMap) {
-      this.keyMap[event.key].up()
+      this.keyMap[keyName].up()
     }
   }
 }
