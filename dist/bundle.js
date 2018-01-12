@@ -1450,11 +1450,19 @@ class Instrument {
       this.keyMap[keyName] = key
     }
 
+    this.keyContainer.addEventListener('touchstart', this.touchStartCallback.bind(this))
+    this.keyContainer.addEventListener('touchmove', this.touchStartCallback.bind(this))
+    this.keyContainer.addEventListener('touchend', this.touchEndCallback.bind(this))
+
     document.addEventListener('keydown', (event) => {
-      this._keyDown(event)
+      if (!(event.ctrlKey || event.altKey || event.metaKey)) {
+        event.preventDefault()
+        this._keyDown(event)
+      }
     })
 
     document.addEventListener('keyup', (event) => {
+      event.preventDefault()
       this._keyUp(event)
     })
 
@@ -1496,6 +1504,45 @@ class Instrument {
     this.active = false
     for (let keyName in this.keyMap) {
       this.keyMap[keyName].up()
+    }
+  }
+
+  touchStartCallback(event) {
+    event.preventDefault()
+    console.log(event.targetTouches.length)
+    for (let k in this.keyMap) {
+      const key = this.keyMap[k]
+      let isTouched = false
+      for (let i in event.touches) {
+        const touch = event.touches[i]
+        const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY)
+        if (key.html.contains(touchedElement)) {
+          isTouched = true
+        }
+      }
+      if (key.isPressed && !isTouched) {
+        key.up()
+      } else if (!key.isPressed && isTouched) {
+        key.down()
+      }
+    }
+  }
+
+  touchEndCallback(event) {
+    event.preventDefault()
+    for (let k in this.keyMap) {
+      const key = this.keyMap[k]
+      let isReleased = false
+      for (let i in event.changedTouches) {
+        const touch = event.changedTouches[i]
+        const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY)
+        if (key.html.contains(touchedElement)) {
+          isReleased = true
+        }
+      }
+      if (key.isPressed && isReleased) {
+        key.up()
+      }
     }
   }
 }
@@ -4410,6 +4457,7 @@ class Key {
     this.pitch = pitch
     this.onDown = onDown
     this.onUp = onUp
+    this.isPressed = false
 
     this.html = document.createElement('div')
     this.html.classList.add('key-object')
@@ -4428,16 +4476,19 @@ class Key {
     this.keyNameDiv = document.createElement('div')
     this.keyNameDiv.classList.add('key-name')
     this.keyNameDiv.innerText = this.key
+
     this.html.appendChild(this.keyNameDiv)
   }
 
   down() {
     this.html.classList.add('pressed')
+    this.isPressed = true
     this.onDown()
   }
 
   up() {
     this.html.classList.remove('pressed')
+    this.isPressed = false
     this.onUp()
   }
 }
@@ -4496,6 +4547,7 @@ exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\
 
 class Synth {
   constructor() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
     this.audioContext = new AudioContext()
     this.oscillators = {}
   }
@@ -4714,7 +4766,8 @@ class Button {
     this.html = document.createElement('div')
     this.html.classList.add('button-object')
     this.html.innerText = text
-    this.html.addEventListener('click', () => {
+    this.html.addEventListener('click', (event) => {
+      event.preventDefault()
       onClick()
     })
   }

@@ -1,5 +1,6 @@
 class Synth {
   constructor() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
     this.audioContext = new AudioContext()
     this.oscillators = {}
   }

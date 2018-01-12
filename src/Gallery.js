@@ -32,7 +32,6 @@ class Gallery {
     }
     
     const limitingDimension = Math.min(this.width, this.height)
-    console.log(this.width, this.height, limitingDimension)
     const width = limitingDimension - limitingDimension / 5
     const height = width
 
