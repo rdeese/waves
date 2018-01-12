@@ -1,6 +1,9 @@
 // (() => {
 //
 require('./app.less')
+
+const queryString = require('query-string')
+
 const Point = require('./Point')
 const Pitch = require('./Pitch')
 const Canvas = require('./Canvas')
@@ -10,6 +13,9 @@ const Synth = require('./Synth')
 const main = () => {
   const width = window.innerWidth
   const height = window.innerHeight
+
+  const userParams = queryString.parse(location.search);
+  const useColor = !!userParams.colorful
 
   const keyContainer = document.getElementById('key-container')
   keyContainer.style.width = width
@@ -44,7 +50,7 @@ const main = () => {
 
   for (keyName in keyMap) {
     const pitch = keyMap[keyName]
-    const canvas = Canvas.fromPitches([pitch], width, height)
+    const canvas = Canvas.fromPitches([pitch], width, height, useColor)
     canvasses[pitch.note] = canvas
     canvasContainer.appendChild(canvas.html)
 
@@ -54,7 +60,7 @@ const main = () => {
     }, () => {
       canvas.hide()
       synth.stop(pitch)
-    })
+    }, useColor)
 
     keyContainer.appendChild(key.html)
 

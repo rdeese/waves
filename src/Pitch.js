@@ -25,7 +25,7 @@ class Pitch {
   }
 
   static visualFrequencyFromNumber(noteNumber) {
-    return /* 440 */ 0.6 * Math.pow(1.059463, noteNumber - 49)
+    return 0.6 * Math.pow(1.059463, noteNumber - 49)
   }
 
   static frequencyFromNumber(noteNumber) {
@@ -47,7 +47,7 @@ class Pitch {
 
     this.visualFrequency = Pitch.visualFrequencyFromNumber(this.number)
     this.frequency = Pitch.frequencyFromNumber(this.number)
-    this.color = 'black' //chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
+    this.color = chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
   }
 }
 

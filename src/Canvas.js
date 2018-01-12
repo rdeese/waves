@@ -8,7 +8,8 @@ const Random = {
 }
 
 class Canvas {
-  constructor(canvasElement) {
+  constructor(canvasElement, useColor) {
+    this.useColor = useColor
     this.html = document.createElement('div')
     this.html.classList.add('canvas-object')
     this.canvas = canvasElement
@@ -29,7 +30,7 @@ class Canvas {
   }
 
   drawPitch(pitch) {
-    this.context.fillStyle = pitch.color
+    this.context.fillStyle = this.useColor ? pitch.color : 'black'
     for (let i = 0; i < 800000; i++) {
       let dot = this.randomPoint()
       if (Math.sin(dot.distanceFrom(this.center())*pitch.visualFrequency) > Random.inRange(-1, 1)) {
@@ -38,11 +39,11 @@ class Canvas {
     }
   }
 
-  static fromPitches(pitches, width, height) {
+  static fromPitches(pitches, width, height, useColor) {
     const canvasElement = document.createElement('canvas')
     canvasElement.width = width
     canvasElement.height = height
-    const canvas = new Canvas(canvasElement)
+    const canvas = new Canvas(canvasElement, useColor)
 
     for (let i in pitches) {
       canvas.drawPitch(pitches[i])

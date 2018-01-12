@@ -550,15 +550,21 @@ module.exports = Point
 // (() => {
 //
 __webpack_require__(4)
+
+const queryString = __webpack_require__(7)
+
 const Point = __webpack_require__(2)
-const Pitch = __webpack_require__(7)
-const Canvas = __webpack_require__(10)
-const Key = __webpack_require__(13)
-const Synth = __webpack_require__(16)
+const Pitch = __webpack_require__(11)
+const Canvas = __webpack_require__(14)
+const Key = __webpack_require__(17)
+const Synth = __webpack_require__(20)
 
 const main = () => {
   const width = window.innerWidth
   const height = window.innerHeight
+
+  const userParams = queryString.parse(location.search);
+  const useColor = !!userParams.colorful
 
   const keyContainer = document.getElementById('key-container')
   keyContainer.style.width = width
@@ -566,22 +572,6 @@ const main = () => {
   const canvasContainer = document.getElementById('canvas-container')
   canvasContainer.style.width = width
   canvasContainer.style.height = height
-
-  // const keyMap = {
-  //   'a': new Pitch('A'),
-  //   'w': new Pitch('A#'),
-  //   's': new Pitch('B'),
-  //   'd': new Pitch('C'),
-  //   'r': new Pitch('C#'),
-  //   'f': new Pitch('D'),
-  //   't': new Pitch('D#'),
-  //   'g': new Pitch('E'),
-  //   'h': new Pitch('F'),
-  //   'u': new Pitch('F#'),
-  //   'j': new Pitch('G'),
-  //   'i': new Pitch('G#'),
-  //   'k': new Pitch("A'")
-  // }
 
   const keyMap = {
     'a': new Pitch('C'),
@@ -609,18 +599,17 @@ const main = () => {
 
   for (keyName in keyMap) {
     const pitch = keyMap[keyName]
-    const canvas = Canvas.fromPitches([pitch], width, height)
-    canvas.html.style.position = 'absolute'
+    const canvas = Canvas.fromPitches([pitch], width, height, useColor)
     canvasses[pitch.note] = canvas
     canvasContainer.appendChild(canvas.html)
 
     const key = new Key(keyName, pitch, () => {
-      canvas.html.style.visibility = 'visible'
+      canvas.show()
       synth.play(pitch)
     }, () => {
-      canvas.html.style.visibility = 'hidden'
+      canvas.hide()
       synth.stop(pitch)
-    })
+    }, useColor)
 
     keyContainer.appendChild(key.html)
 
@@ -642,7 +631,7 @@ const main = () => {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       for (key in canvasses) {
-        canvasses[key].html.style.visibility = 'hidden'
+        canvasses[key].hide()
         const loadingElement = document.getElementById('loading')
         loadingElement.classList.add('hidden')
         loadingElement.addEventListener('animationend', () => {
@@ -805,7 +794,435 @@ module.exports = function (css) {
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const chroma = __webpack_require__(8)
+"use strict";
+
+var strictUriEncode = __webpack_require__(8);
+var objectAssign = __webpack_require__(9);
+var decodeComponent = __webpack_require__(10);
+
+function encoderForArrayFormat(opts) {
+	switch (opts.arrayFormat) {
+		case 'index':
+			return function (key, value, index) {
+				return value === null ? [
+					encode(key, opts),
+					'[',
+					index,
+					']'
+				].join('') : [
+					encode(key, opts),
+					'[',
+					encode(index, opts),
+					']=',
+					encode(value, opts)
+				].join('');
+			};
+
+		case 'bracket':
+			return function (key, value) {
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'[]=',
+					encode(value, opts)
+				].join('');
+			};
+
+		default:
+			return function (key, value) {
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'=',
+					encode(value, opts)
+				].join('');
+			};
+	}
+}
+
+function parserForArrayFormat(opts) {
+	var result;
+
+	switch (opts.arrayFormat) {
+		case 'index':
+			return function (key, value, accumulator) {
+				result = /\[(\d*)\]$/.exec(key);
+
+				key = key.replace(/\[\d*\]$/, '');
+
+				if (!result) {
+					accumulator[key] = value;
+					return;
+				}
+
+				if (accumulator[key] === undefined) {
+					accumulator[key] = {};
+				}
+
+				accumulator[key][result[1]] = value;
+			};
+
+		case 'bracket':
+			return function (key, value, accumulator) {
+				result = /(\[\])$/.exec(key);
+				key = key.replace(/\[\]$/, '');
+
+				if (!result) {
+					accumulator[key] = value;
+					return;
+				} else if (accumulator[key] === undefined) {
+					accumulator[key] = [value];
+					return;
+				}
+
+				accumulator[key] = [].concat(accumulator[key], value);
+			};
+
+		default:
+			return function (key, value, accumulator) {
+				if (accumulator[key] === undefined) {
+					accumulator[key] = value;
+					return;
+				}
+
+				accumulator[key] = [].concat(accumulator[key], value);
+			};
+	}
+}
+
+function encode(value, opts) {
+	if (opts.encode) {
+		return opts.strict ? strictUriEncode(value) : encodeURIComponent(value);
+	}
+
+	return value;
+}
+
+function keysSorter(input) {
+	if (Array.isArray(input)) {
+		return input.sort();
+	} else if (typeof input === 'object') {
+		return keysSorter(Object.keys(input)).sort(function (a, b) {
+			return Number(a) - Number(b);
+		}).map(function (key) {
+			return input[key];
+		});
+	}
+
+	return input;
+}
+
+exports.extract = function (str) {
+	var queryStart = str.indexOf('?');
+	if (queryStart === -1) {
+		return '';
+	}
+	return str.slice(queryStart + 1);
+};
+
+exports.parse = function (str, opts) {
+	opts = objectAssign({arrayFormat: 'none'}, opts);
+
+	var formatter = parserForArrayFormat(opts);
+
+	// Create an object with no prototype
+	// https://github.com/sindresorhus/query-string/issues/47
+	var ret = Object.create(null);
+
+	if (typeof str !== 'string') {
+		return ret;
+	}
+
+	str = str.trim().replace(/^[?#&]/, '');
+
+	if (!str) {
+		return ret;
+	}
+
+	str.split('&').forEach(function (param) {
+		var parts = param.replace(/\+/g, ' ').split('=');
+		// Firefox (pre 40) decodes `%3D` to `=`
+		// https://github.com/sindresorhus/query-string/pull/37
+		var key = parts.shift();
+		var val = parts.length > 0 ? parts.join('=') : undefined;
+
+		// missing `=` should be `null`:
+		// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
+		val = val === undefined ? null : decodeComponent(val);
+
+		formatter(decodeComponent(key), val, ret);
+	});
+
+	return Object.keys(ret).sort().reduce(function (result, key) {
+		var val = ret[key];
+		if (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {
+			// Sort object keys, not values
+			result[key] = keysSorter(val);
+		} else {
+			result[key] = val;
+		}
+
+		return result;
+	}, Object.create(null));
+};
+
+exports.stringify = function (obj, opts) {
+	var defaults = {
+		encode: true,
+		strict: true,
+		arrayFormat: 'none'
+	};
+
+	opts = objectAssign(defaults, opts);
+
+	var formatter = encoderForArrayFormat(opts);
+
+	return obj ? Object.keys(obj).sort().map(function (key) {
+		var val = obj[key];
+
+		if (val === undefined) {
+			return '';
+		}
+
+		if (val === null) {
+			return encode(key, opts);
+		}
+
+		if (Array.isArray(val)) {
+			var result = [];
+
+			val.slice().forEach(function (val2) {
+				if (val2 === undefined) {
+					return;
+				}
+
+				result.push(formatter(key, val2, result.length));
+			});
+
+			return result.join('&');
+		}
+
+		return encode(key, opts) + '=' + encode(val, opts);
+	}).filter(function (x) {
+		return x.length > 0;
+	}).join('&') : '';
+};
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+module.exports = function (str) {
+	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+		return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+	});
+};
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+
+
+/* eslint-disable no-unused-vars */
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+function toObject(val) {
+	if (val === null || val === undefined) {
+		throw new TypeError('Object.assign cannot be called with null or undefined');
+	}
+
+	return Object(val);
+}
+
+function shouldUseNative() {
+	try {
+		if (!Object.assign) {
+			return false;
+		}
+
+		// Detect buggy property enumeration order in older V8 versions.
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
+		var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
+		test1[5] = 'de';
+		if (Object.getOwnPropertyNames(test1)[0] === '5') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test2 = {};
+		for (var i = 0; i < 10; i++) {
+			test2['_' + String.fromCharCode(i)] = i;
+		}
+		var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
+			return test2[n];
+		});
+		if (order2.join('') !== '0123456789') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test3 = {};
+		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
+			test3[letter] = letter;
+		});
+		if (Object.keys(Object.assign({}, test3)).join('') !==
+				'abcdefghijklmnopqrst') {
+			return false;
+		}
+
+		return true;
+	} catch (err) {
+		// We don't expect any of the above to throw, but better to be safe.
+		return false;
+	}
+}
+
+module.exports = shouldUseNative() ? Object.assign : function (target, source) {
+	var from;
+	var to = toObject(target);
+	var symbols;
+
+	for (var s = 1; s < arguments.length; s++) {
+		from = Object(arguments[s]);
+
+		for (var key in from) {
+			if (hasOwnProperty.call(from, key)) {
+				to[key] = from[key];
+			}
+		}
+
+		if (getOwnPropertySymbols) {
+			symbols = getOwnPropertySymbols(from);
+			for (var i = 0; i < symbols.length; i++) {
+				if (propIsEnumerable.call(from, symbols[i])) {
+					to[symbols[i]] = from[symbols[i]];
+				}
+			}
+		}
+	}
+
+	return to;
+};
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var token = '%[a-f0-9]{2}';
+var singleMatcher = new RegExp(token, 'gi');
+var multiMatcher = new RegExp('(' + token + ')+', 'gi');
+
+function decodeComponents(components, split) {
+	try {
+		// Try to decode the entire string first
+		return decodeURIComponent(components.join(''));
+	} catch (err) {
+		// Do nothing
+	}
+
+	if (components.length === 1) {
+		return components;
+	}
+
+	split = split || 1;
+
+	// Split the array in 2 parts
+	var left = components.slice(0, split);
+	var right = components.slice(split);
+
+	return Array.prototype.concat.call([], decodeComponents(left), decodeComponents(right));
+}
+
+function decode(input) {
+	try {
+		return decodeURIComponent(input);
+	} catch (err) {
+		var tokens = input.match(singleMatcher);
+
+		for (var i = 1; i < tokens.length; i++) {
+			input = decodeComponents(tokens, i).join('');
+
+			tokens = input.match(singleMatcher);
+		}
+
+		return input;
+	}
+}
+
+function customDecodeURIComponent(input) {
+	// Keep track of all the replacements and prefill the map with the `BOM`
+	var replaceMap = {
+		'%FE%FF': '\uFFFD\uFFFD',
+		'%FF%FE': '\uFFFD\uFFFD'
+	};
+
+	var match = multiMatcher.exec(input);
+	while (match) {
+		try {
+			// Decode as big chunks as possible
+			replaceMap[match[0]] = decodeURIComponent(match[0]);
+		} catch (err) {
+			var result = decode(match[0]);
+
+			if (result !== match[0]) {
+				replaceMap[match[0]] = result;
+			}
+		}
+
+		match = multiMatcher.exec(input);
+	}
+
+	// Add `%C2` at the end of the map to make sure it does not replace the combinator before everything else
+	replaceMap['%C2'] = '\uFFFD';
+
+	var entries = Object.keys(replaceMap);
+
+	for (var i = 0; i < entries.length; i++) {
+		// Replace all decoded components
+		var key = entries[i];
+		input = input.replace(new RegExp(key, 'g'), replaceMap[key]);
+	}
+
+	return input;
+}
+
+module.exports = function (encodedURI) {
+	if (typeof encodedURI !== 'string') {
+		throw new TypeError('Expected `encodedURI` to be of type `string`, got `' + typeof encodedURI + '`');
+	}
+
+	try {
+		encodedURI = encodedURI.replace(/\+/g, ' ');
+
+		// Try the built in decoder first
+		return decodeURIComponent(encodedURI);
+	} catch (err) {
+		// Fallback to a more advanced decoder
+		return customDecodeURIComponent(encodedURI);
+	}
+};
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const chroma = __webpack_require__(12)
 
 class Pitch {
   static noteNumbers() {
@@ -832,7 +1249,7 @@ class Pitch {
   }
 
   static visualFrequencyFromNumber(noteNumber) {
-    return /* 440 */ 0.6 * Math.pow(1.059463, noteNumber - 49)
+    return 0.6 * Math.pow(1.059463, noteNumber - 49)
   }
 
   static frequencyFromNumber(noteNumber) {
@@ -854,7 +1271,7 @@ class Pitch {
 
     this.visualFrequency = Pitch.visualFrequencyFromNumber(this.number)
     this.frequency = Pitch.frequencyFromNumber(this.number)
-    this.color = 'black' //chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
+    this.color = chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
   }
 }
 
@@ -862,7 +1279,7 @@ module.exports = Pitch
 
 
 /***/ }),
-/* 8 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
@@ -3610,10 +4027,10 @@ module.exports = Pitch
 
 }).call(this);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)(module)))
 
 /***/ }),
-/* 9 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -3641,10 +4058,10 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 10 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(11)
+__webpack_require__(15)
 const Point = __webpack_require__(2)
 
 const Random = {
@@ -3654,8 +4071,10 @@ const Random = {
 }
 
 class Canvas {
-  constructor(canvasElement) {
+  constructor(canvasElement, useColor) {
+    this.useColor = useColor
     this.html = document.createElement('div')
+    this.html.classList.add('canvas-object')
     this.canvas = canvasElement
     this.html.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
@@ -3674,7 +4093,7 @@ class Canvas {
   }
 
   drawPitch(pitch) {
-    this.context.fillStyle = pitch.color
+    this.context.fillStyle = this.useColor ? pitch.color : 'black'
     for (let i = 0; i < 800000; i++) {
       let dot = this.randomPoint()
       if (Math.sin(dot.distanceFrom(this.center())*pitch.visualFrequency) > Random.inRange(-1, 1)) {
@@ -3683,11 +4102,11 @@ class Canvas {
     }
   }
 
-  static fromPitches(pitches, width, height) {
+  static fromPitches(pitches, width, height, useColor) {
     const canvasElement = document.createElement('canvas')
     canvasElement.width = width
     canvasElement.height = height
-    const canvas = new Canvas(canvasElement)
+    const canvas = new Canvas(canvasElement, useColor)
 
     for (let i in pitches) {
       canvas.drawPitch(pitches[i])
@@ -3695,19 +4114,30 @@ class Canvas {
 
     return canvas
   }
+
+  // Potentially for another class
+  show() {
+    this.html.classList.remove('hidden')
+    this.html.classList.add('visible')
+  }
+
+  hide() {
+    this.html.classList.remove('visible')
+    this.html.classList.add('hidden')
+  }
 }
 
 module.exports = Canvas
 
 
 /***/ }),
-/* 11 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(12);
+var content = __webpack_require__(16);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -3732,7 +4162,7 @@ if(false) {
 }
 
 /***/ }),
-/* 12 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -3740,19 +4170,19 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "", ""]);
+exports.push([module.i, "/* Not useful at the moment, or maybe ever;\n   the browser can't render the transitions at\n   the requested speed and it looks chunky */\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n@keyframes appear {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n.canvas-object {\n  position: absolute;\n}\n.canvas-object.hidden {\n  display: none;\n}\n.canvas-object.visible {\n  display: block;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 13 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(14)
+__webpack_require__(18)
 
 class Key {
-  constructor(key, pitch, onDown, onUp) {
+  constructor(key, pitch, onDown, onUp, useColor) {
     this.key = key
     this.pitch = pitch
     this.onDown = onDown
@@ -3762,6 +4192,10 @@ class Key {
     this.html.classList.add('key-object')
     if (pitch.note.match('#')) {
       this.html.classList.add('sharp')
+    }
+
+    if (useColor) {
+      this.html.style.backgroundColor = pitch.color
     }
 
     this.noteNameDiv = document.createElement('div')
@@ -3789,13 +4223,13 @@ module.exports = Key
 
 
 /***/ }),
-/* 14 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(15);
+var content = __webpack_require__(19);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -3820,7 +4254,7 @@ if(false) {
 }
 
 /***/ }),
-/* 15 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -3834,7 +4268,7 @@ exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\
 
 
 /***/ }),
-/* 16 */
+/* 20 */
 /***/ (function(module, exports) {
 
 class Synth {
@@ -3843,25 +4277,31 @@ class Synth {
     this.oscillators = {}
   }
 
-  _getOscillator(pitch) {
-    let oscillator = this.oscillators[pitch.note]
-    if (!oscillator) {
-      oscillator = this.audioContext.createOscillator()
+  _getGainNode(pitch) {
+    let gainNode = this.oscillators[pitch.note]
+    if (!gainNode) {
+      const oscillator = this.audioContext.createOscillator()
       oscillator.type = 'triangle'
-      oscillator.frequency.value = pitch.frequency
+      oscillator.frequency.setValueAtTime(pitch.frequency, this.audioContext.currentTime)
       oscillator.start()
-      this.oscillators[pitch.note] = oscillator
+      gainNode = this.audioContext.createGain()
+      gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
+      oscillator.connect(gainNode)
+      gainNode.connect(this.audioContext.destination)
+      this.oscillators[pitch.note] = gainNode
     }
 
-    return oscillator
+    return gainNode
   }
 
   play(pitch) {
-    this._getOscillator(pitch).connect(this.audioContext.destination)
+    const gainNode = this._getGainNode(pitch)
+    gainNode.gain.setTargetAtTime(1, this.audioContext.currentTime, 0.015)
   }
 
   stop(pitch) {
-    this._getOscillator(pitch).disconnect()
+    const gainNode = this._getGainNode(pitch)
+    gainNode.gain.setTargetAtTime(0, this.audioContext.currentTime, 0.015)
   }
 }
 

@@ -1,7 +1,7 @@
 require('./key.less')
 
 class Key {
-  constructor(key, pitch, onDown, onUp) {
+  constructor(key, pitch, onDown, onUp, useColor) {
     this.key = key
     this.pitch = pitch
     this.onDown = onDown
@@ -11,6 +11,10 @@ class Key {
     this.html.classList.add('key-object')
     if (pitch.note.match('#')) {
       this.html.classList.add('sharp')
+    }
+
+    if (useColor) {
+      this.html.style.backgroundColor = pitch.color
     }
 
     this.noteNameDiv = document.createElement('div')
