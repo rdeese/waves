@@ -4,6 +4,7 @@ const Pitch = require('./Pitch')
 const Canvas = require('./Canvas')
 const Key = require('./Key')
 const Synth = require('./Synth')
+const Overlay = require('./Overlay')
 
 class Instrument {
   constructor(useColor) {
@@ -17,12 +18,8 @@ class Instrument {
     this.width = window.innerWidth
     this.height = window.innerHeight
 
-    this.loadingElement = document.createElement('div')
-    this.loadingElement.classList.add('loading')
-    this.loadingElement.style.width = window.innerWidth;
-    this.loadingElement.style.height = window.innerHeight;
-    this.loadingElement.innerText = 'loading instrument...'
-    this.html.appendChild(this.loadingElement)
+    this.loadingElement = new Overlay('loading instrument...', this.width, this.height)
+    this.html.appendChild(this.loadingElement.html)
 
     this.keyContainer = document.createElement('div')
     this.keyContainer.classList.add('key-container')
@@ -93,10 +90,7 @@ class Instrument {
           canvases[key].hide()
         }
 
-        this.loadingElement.classList.add('hidden')
-        this.loadingElement.addEventListener('animationend', () => {
-          this.loadingElement.style.display = 'none'
-        })
+        this.loadingElement.hide()
 
         this.active = true;
         this.initialized = true;

@@ -5,32 +5,6 @@
   flex-wrap: wrap;
   flex-direction: column;
 
-  .loading {
-    position: absolute;
-    top: 0;
-    z-index: 200;
-    background-color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .loading.hidden {
-    animation-duration: 2s;
-    animation-name: vanish;
-    animation-fill-mode: forwards;
-  }
-
-  @keyframes vanish {
-    from {
-      opacity: 1;
-    }
-
-    to {
-      opacity: 0;
-    }
-  }
-
   .canvas-container {
     position: relative;
   }

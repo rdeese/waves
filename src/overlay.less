@@ -1,0 +1,25 @@
+.overlay-object {
+  position: absolute;
+  top: 0;
+  z-index: 200;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.hidden {
+    animation-duration: 2s;
+    animation-name: vanish;
+    animation-fill-mode: forwards;
+  }
+}
+
+@keyframes vanish {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}

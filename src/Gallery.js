@@ -1,6 +1,7 @@
 require('./gallery.less')
 const Pitch = require('./Pitch')
 const Canvas = require('./Canvas')
+const Overlay = require('./Overlay')
 
 class Gallery {
   constructor(useColor) {
@@ -13,13 +14,8 @@ class Gallery {
     this.width = window.innerWidth
     this.height = window.innerHeight
 
-    // DRY up in new component
-    this.loadingElement = document.createElement('div')
-    this.loadingElement.classList.add('loading')
-    this.loadingElement.style.width = window.innerWidth;
-    this.loadingElement.style.height = window.innerHeight;
-    this.loadingElement.innerText = 'hello! please stand by...'
-    this.html.appendChild(this.loadingElement)
+    this.loadingElement = new Overlay('hello! please stand by...', this.width, this.height)
+    this.html.appendChild(this.loadingElement.html)
 
     // this.canvasDisplay = document.createElement('div')
     // this.canvasDisplay.classList.add('canvas-display')
@@ -53,10 +49,7 @@ class Gallery {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        this.loadingElement.classList.add('hidden')
-        this.loadingElement.addEventListener('animationend', () => {
-          this.loadingElement.style.display = 'none'
-        })
+        this.loadingElement.hide()
         this.initialized = true;
       })
     })

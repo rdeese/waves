@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -202,7 +202,7 @@ var singleton = null;
 var	singletonCounter = 0;
 var	stylesInsertedAtTop = [];
 
-var	fixUrls = __webpack_require__(7);
+var	fixUrls = __webpack_require__(8);
 
 module.exports = function(list, options) {
 	if (typeof DEBUG !== "undefined" && DEBUG) {
@@ -521,7 +521,7 @@ function updateLink (link, options, obj) {
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const chroma = __webpack_require__(15)
+const chroma = __webpack_require__(16)
 
 class Pitch {
   static noteNumbers() {
@@ -581,8 +581,8 @@ module.exports = Pitch
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(17)
-const Point = __webpack_require__(19)
+__webpack_require__(18)
+const Point = __webpack_require__(20)
 
 const Random = {
   inRange: (low, high) => {
@@ -654,10 +654,40 @@ module.exports = Canvas
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(5)
-const queryString = __webpack_require__(8)
-const Instrument = __webpack_require__(12)
-const Gallery = __webpack_require__(24)
+__webpack_require__(25)
+class Overlay {
+  constructor(text, width, height) {
+    this.html = document.createElement('div')
+    this.html.classList.add('overlay-object')
+    this.html.style.width = width
+    this.html.style.height = height
+    this.html.innerText = text
+  }
+
+  hide() {
+    this.html.classList.add('hidden')
+    this.html.addEventListener('animationend', () => {
+      this.html.style.display = 'none'
+    })
+  }
+
+  show() {
+      this.html.style.display = 'unset'
+    this.html.classList.remove('hidden')
+  }
+}
+
+module.exports = Overlay
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(6)
+const queryString = __webpack_require__(9)
+const Instrument = __webpack_require__(13)
+const Gallery = __webpack_require__(27)
 
 const main = () => {
   const userParams = queryString.parse(location.search);
@@ -717,13 +747,13 @@ window.addEventListener('load', main)
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(6);
+var content = __webpack_require__(7);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -748,7 +778,7 @@ if(false) {
 }
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -762,7 +792,7 @@ exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n  disp
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 
@@ -857,14 +887,14 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var strictUriEncode = __webpack_require__(9);
-var objectAssign = __webpack_require__(10);
-var decodeComponent = __webpack_require__(11);
+var strictUriEncode = __webpack_require__(10);
+var objectAssign = __webpack_require__(11);
+var decodeComponent = __webpack_require__(12);
 
 function encoderForArrayFormat(opts) {
 	switch (opts.arrayFormat) {
@@ -1074,7 +1104,7 @@ exports.stringify = function (obj, opts) {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1087,7 +1117,7 @@ module.exports = function (str) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1184,7 +1214,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1285,15 +1315,16 @@ module.exports = function (encodedURI) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(13)
+__webpack_require__(14)
 
 const Pitch = __webpack_require__(2)
 const Canvas = __webpack_require__(3)
-const Key = __webpack_require__(20)
-const Synth = __webpack_require__(23)
+const Key = __webpack_require__(21)
+const Synth = __webpack_require__(24)
+const Overlay = __webpack_require__(4)
 
 class Instrument {
   constructor(useColor) {
@@ -1307,12 +1338,8 @@ class Instrument {
     this.width = window.innerWidth
     this.height = window.innerHeight
 
-    this.loadingElement = document.createElement('div')
-    this.loadingElement.classList.add('loading')
-    this.loadingElement.style.width = window.innerWidth;
-    this.loadingElement.style.height = window.innerHeight;
-    this.loadingElement.innerText = 'loading instrument...'
-    this.html.appendChild(this.loadingElement)
+    this.loadingElement = new Overlay('loading instrument...', this.width, this.height)
+    this.html.appendChild(this.loadingElement.html)
 
     this.keyContainer = document.createElement('div')
     this.keyContainer.classList.add('key-container')
@@ -1383,10 +1410,7 @@ class Instrument {
           canvases[key].hide()
         }
 
-        this.loadingElement.classList.add('hidden')
-        this.loadingElement.addEventListener('animationend', () => {
-          this.loadingElement.style.display = 'none'
-        })
+        this.loadingElement.hide()
 
         this.active = true;
         this.initialized = true;
@@ -1426,13 +1450,13 @@ module.exports = Instrument
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(14);
+var content = __webpack_require__(15);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -1457,7 +1481,7 @@ if(false) {
 }
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -1465,13 +1489,13 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n}\n.instrument-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.instrument-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n.instrument-object .canvas-container {\n  position: relative;\n}\n.instrument-object .key-container {\n  position: fixed;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n  width: 100%;\n}\n", ""]);
+exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n}\n.instrument-object .canvas-container {\n  position: relative;\n}\n.instrument-object .key-container {\n  position: fixed;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n  width: 100%;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
@@ -4219,10 +4243,10 @@ exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: 
 
 }).call(this);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)(module)))
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -4250,13 +4274,13 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(18);
+var content = __webpack_require__(19);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4281,7 +4305,7 @@ if(false) {
 }
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4295,7 +4319,7 @@ exports.push([module.i, "/* Not useful at the moment, or maybe ever;\n   the bro
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 class Point {
@@ -4321,10 +4345,10 @@ module.exports = Point
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(21)
+__webpack_require__(22)
 
 class Key {
   constructor(key, pitch, onDown, onUp, useColor) {
@@ -4368,13 +4392,13 @@ module.exports = Key
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(22);
+var content = __webpack_require__(23);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4399,7 +4423,7 @@ if(false) {
 }
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4413,7 +4437,7 @@ exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 class Synth {
@@ -4454,12 +4478,58 @@ module.exports = Synth
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(25)
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(26);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// Prepare cssTransformation
+var transform;
+
+var options = {"hmr":true}
+options.transform = transform
+// add the styles to the DOM
+var update = __webpack_require__(1)(content, options);
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./overlay.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./overlay.less");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(0)(false);
+// imports
+
+
+// module
+exports.push([module.i, ".overlay-object {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.overlay-object.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(28)
 const Pitch = __webpack_require__(2)
 const Canvas = __webpack_require__(3)
+const Overlay = __webpack_require__(4)
 
 class Gallery {
   constructor(useColor) {
@@ -4472,13 +4542,8 @@ class Gallery {
     this.width = window.innerWidth
     this.height = window.innerHeight
 
-    // DRY up in new component
-    this.loadingElement = document.createElement('div')
-    this.loadingElement.classList.add('loading')
-    this.loadingElement.style.width = window.innerWidth;
-    this.loadingElement.style.height = window.innerHeight;
-    this.loadingElement.innerText = 'hello! please stand by...'
-    this.html.appendChild(this.loadingElement)
+    this.loadingElement = new Overlay('hello! please stand by...', this.width, this.height)
+    this.html.appendChild(this.loadingElement.html)
 
     // this.canvasDisplay = document.createElement('div')
     // this.canvasDisplay.classList.add('canvas-display')
@@ -4512,10 +4577,7 @@ class Gallery {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        this.loadingElement.classList.add('hidden')
-        this.loadingElement.addEventListener('animationend', () => {
-          this.loadingElement.style.display = 'none'
-        })
+        this.loadingElement.hide()
         this.initialized = true;
       })
     })
@@ -4526,13 +4588,13 @@ module.exports = Gallery
 
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(26);
+var content = __webpack_require__(29);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4557,7 +4619,7 @@ if(false) {
 }
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4565,7 +4627,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".gallery-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n}\n.gallery-object .canvas-wrapper {\n  display: flex;\n  justify-content: center;\n  margin: 10px;\n  flex-basis: 100%;\n}\n.gallery-object .title {\n  position: absolute;\n  bottom: 0;\n  right: -77;\n  margin: 10px;\n  font-size: 1.2em;\n}\n.gallery-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.gallery-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n", ""]);
+exports.push([module.i, ".gallery-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n}\n.gallery-object .canvas-wrapper {\n  display: flex;\n  justify-content: center;\n  margin: 10px;\n  flex-basis: 100%;\n}\n.gallery-object .title {\n  position: absolute;\n  bottom: 0;\n  right: -77;\n  margin: 10px;\n  font-size: 1.2em;\n}\n", ""]);
 
 // exports
 
