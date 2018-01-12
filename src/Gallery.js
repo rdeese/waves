@@ -32,11 +32,13 @@ class Gallery {
     }
     
     const limitingDimension = Math.min(this.width, this.height)
+    console.log(this.width, this.height, limitingDimension)
     const width = limitingDimension - limitingDimension / 5
     const height = width
 
 
     const introText = document.createElement('div')
+    introText.classList.add('intro-text')
     introText.style.width = limitingDimension - limitingDimension / 4
     introText.innerHTML = `
     <h4>Waves (2018)</h4>
