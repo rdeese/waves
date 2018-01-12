@@ -1,6 +1,5 @@
 require('./instrument.less')
 
-const Point = require('./Point')
 const Pitch = require('./Pitch')
 const Canvas = require('./Canvas')
 const Key = require('./Key')
@@ -57,13 +56,13 @@ class Instrument {
       "'": new Pitch('f'),
     }
 
-    const canvasses = {}
+    const canvases = {}
     const synth = new Synth()
 
     for (let keyName in this.keyMap) {
       const pitch = this.keyMap[keyName]
       const canvas = Canvas.fromPitches([pitch], this.width, this.height, this.useColor)
-      canvasses[pitch.note] = canvas
+      canvases[pitch.note] = canvas
       this.canvasContainer.appendChild(canvas.html)
 
       const key = new Key(keyName, pitch, () => {
@@ -89,13 +88,15 @@ class Instrument {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        for (let key in canvasses) {
-          canvasses[key].hide()
-          this.loadingElement.classList.add('hidden')
-          this.loadingElement.addEventListener('animationend', () => {
-            this.loadingElement.style.display = 'none'
-          })
+        for (let key in canvases) {
+          canvases[key].hide()
         }
+
+        this.loadingElement.classList.add('hidden')
+        this.loadingElement.addEventListener('animationend', () => {
+          this.loadingElement.style.display = 'none'
+        })
+
         this.active = true;
       })
     })

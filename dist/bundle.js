@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -202,7 +202,7 @@ var singleton = null;
 var	singletonCounter = 0;
 var	stylesInsertedAtTop = [];
 
-var	fixUrls = __webpack_require__(6);
+var	fixUrls = __webpack_require__(7);
 
 module.exports = function(list, options) {
 	if (typeof DEBUG !== "undefined" && DEBUG) {
@@ -519,145 +519,184 @@ function updateLink (link, options, obj) {
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-class Point {
-  constructor(x, y) {
-    this.x = x
-    this.y = y
+const chroma = __webpack_require__(15)
+
+class Pitch {
+  static noteNumbers() {
+    return {
+      'C': 40,
+      'C#': 41,
+      'D': 42,
+      'D#': 43,
+      'E': 44,
+      'F': 45,
+      'F#': 46,
+      'G': 47,
+      'G#': 48,
+      'A': 49,
+      'A#': 50,
+      'B': 51,
+      'c': 52,
+      'c#': 53,
+      'd': 54,
+      'd#': 55,
+      'e': 56,
+      'f': 57
+    }
   }
 
-  distanceFrom(point) {
-    return Math.sqrt(Math.pow(point.x - this.x, 2) + Math.pow(point.y - this.y, 2))
+  static visualFrequencyFromNumber(noteNumber) {
+    return 0.6 * Math.pow(1.059463, noteNumber - 49)
   }
 
-  offset(x, y) {
-    return new Point(this.x + x, this.y + y);
+  static frequencyFromNumber(noteNumber) {
+    return 440 * Math.pow(1.0594630943592953, noteNumber - 49)
   }
-  
-  static fromEvent (event) {
-    return new Point(event.clientX, event.clientY)
+
+  constructor(arg) {
+    if (typeof(arg) === 'string') {
+      if (arg in Pitch.noteNumbers()) {
+        this.number = Pitch.noteNumbers()[arg]
+        this.note = arg
+      } else {
+        throw new Error('pitch constructed with invalid note name')
+      }
+    } else if (typeof(arg) === 'number') {
+      this.number = arg
+      this.note = Object.keys(Pitch.noteNumbers()).find(key => Pitch.noteNumbers()[key] === this.number)
+    }
+
+    this.visualFrequency = Pitch.visualFrequencyFromNumber(this.number)
+    this.frequency = Pitch.frequencyFromNumber(this.number)
+    this.color = chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
   }
 }
 
-module.exports = Point
+module.exports = Pitch
 
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-// (() => {
-//
-__webpack_require__(4)
+__webpack_require__(17)
+const Point = __webpack_require__(19)
 
-const queryString = __webpack_require__(7)
-
-const Point = __webpack_require__(2)
-const Pitch = __webpack_require__(11)
-const Canvas = __webpack_require__(14)
-const Key = __webpack_require__(17)
-const Synth = __webpack_require__(20)
-
-const main = () => {
-  const width = window.innerWidth
-  const height = window.innerHeight
-
-  const userParams = queryString.parse(location.search);
-  const useColor = !!userParams.colorful
-
-  const keyContainer = document.getElementById('key-container')
-  keyContainer.style.width = width
-
-  const canvasContainer = document.getElementById('canvas-container')
-  canvasContainer.style.width = width
-  canvasContainer.style.height = height
-
-  const keyMap = {
-    'a': new Pitch('C'),
-    'w': new Pitch('C#'),
-    's': new Pitch('D'),
-    'e': new Pitch('D#'),
-    'd': new Pitch('E'),
-    'f': new Pitch('F'),
-    't': new Pitch('F#'),
-    'g': new Pitch('G'),
-    'y': new Pitch('G#'),
-    'h': new Pitch('A'),
-    'u': new Pitch('A#'),
-    'j': new Pitch('B'),
-    'k': new Pitch('c'),
-    'o': new Pitch('c#'),
-    'l': new Pitch('d'),
-    'p': new Pitch('d#'),
-    ';': new Pitch('e'),
-    "'": new Pitch('f'),
+const Random = {
+  inRange: (low, high) => {
+    return (high - low) * Math.random() + low
   }
-
-  const canvasses = {}
-  const synth = new Synth()
-
-  for (keyName in keyMap) {
-    const pitch = keyMap[keyName]
-    const canvas = Canvas.fromPitches([pitch], width, height, useColor)
-    canvasses[pitch.note] = canvas
-    canvasContainer.appendChild(canvas.html)
-
-    const key = new Key(keyName, pitch, () => {
-      canvas.show()
-      synth.play(pitch)
-    }, () => {
-      canvas.hide()
-      synth.stop(pitch)
-    }, useColor)
-
-    keyContainer.appendChild(key.html)
-
-    keyMap[keyName] = key
-  }
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key in keyMap) {
-      keyMap[event.key].down()
-    }
-  })
-
-  document.addEventListener('keyup', (event) => {
-    if (event.key in keyMap) {
-      keyMap[event.key].up()
-    }
-  })
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      for (key in canvasses) {
-        canvasses[key].hide()
-        const loadingElement = document.getElementById('loading')
-        loadingElement.classList.add('hidden')
-        loadingElement.addEventListener('animationend', () => {
-          loadingElement.style.display = 'none'
-        })
-      }
-    })
-  })
 }
 
-window.addEventListener('load', () => {
-  const loadingElement = document.getElementById('loading')
-  loadingElement.style.width = window.innerWidth;
-  loadingElement.style.height = window.innerHeight;
-  setTimeout(main, 100)
-})
+class Canvas {
+  constructor(canvasElement, useColor) {
+    this.useColor = useColor
+    this.html = document.createElement('div')
+    this.html.classList.add('canvas-object')
+    this.canvas = canvasElement
+    this.html.appendChild(this.canvas)
+    this.context = this.canvas.getContext('2d')
+  }
+
+  clear() {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  center() {
+    return new Point(this.canvas.width/2, this.canvas.height/2)
+  }
+
+  randomPoint() {
+    return new Point(Math.random()*this.canvas.width, Math.random()*this.canvas.height)
+  }
+
+  drawPitch(pitch) {
+    this.context.fillStyle = this.useColor ? pitch.color : 'black'
+    for (let i = 0; i < 800000; i++) {
+      let dot = this.randomPoint()
+      if (Math.sin(dot.distanceFrom(this.center())*pitch.visualFrequency) > Random.inRange(-1, 1)) {
+        this.context.fillRect(dot.x, dot.y, 0.8, 0.8)
+      }
+    }
+  }
+
+  static fromPitches(pitches, width, height, useColor) {
+    const canvasElement = document.createElement('canvas')
+    canvasElement.width = width
+    canvasElement.height = height
+    const canvas = new Canvas(canvasElement, useColor)
+
+    for (let i in pitches) {
+      canvas.drawPitch(pitches[i])
+    }
+
+    return canvas
+  }
+
+  // Potentially for another class
+  show() {
+    this.html.classList.remove('hidden')
+    this.html.classList.add('visible')
+  }
+
+  hide() {
+    this.html.classList.remove('visible')
+    this.html.classList.add('hidden')
+  }
+}
+
+module.exports = Canvas
 
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
+__webpack_require__(5)
+const queryString = __webpack_require__(8)
+const Instrument = __webpack_require__(12)
+const Gallery = __webpack_require__(24)
+
+const main = () => {
+  const galleryArrow = document.createElement('div')
+  galleryArrow.classList.add('arrow', 'left')
+  galleryArrow.innerText = 'view gallery'
+  document.body.appendChild(galleryArrow)
+
+  const instrumentArrow = document.createElement('div')
+  instrumentArrow.classList.add('arrow', 'right')
+  instrumentArrow.innerText = 'play instrument'
+  document.body.appendChild(instrumentArrow)
+
+  const userParams = queryString.parse(location.search);
+  const useColor = !!userParams.colorful
+
+  const gallery = new Gallery(useColor)
+  document.body.appendChild(gallery.html)
+  setTimeout(() => {
+    gallery.initialize()
+  }, 100)
+
+  //  const instrument = new Instrument(useColor)
+  //  document.body.appendChild(instrument.html)
+  //  setTimeout(() => {
+  //    instrument.initialize()
+  //  }, 100)
+}
+
+window.addEventListener('load', main)
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(5);
+var content = __webpack_require__(6);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -671,8 +710,8 @@ if(content.locals) module.exports = content.locals;
 if(false) {
 	// When the styles change, update the <style> tags
 	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./app.less", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./app.less");
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./index.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./index.less");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -682,7 +721,7 @@ if(false) {
 }
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -690,13 +729,13 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "body {\n  margin: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n  font-family: monospace;\n}\n#loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n#loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n#canvas-container {\n  position: relative;\n}\n#key-container {\n  position: absolute;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n}\n", ""]);
+exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: absolute;\n  bottom: 8px;\n  z-index: 300;\n  height: 25px;\n  opacity: 0.6;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 
@@ -791,14 +830,14 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var strictUriEncode = __webpack_require__(8);
-var objectAssign = __webpack_require__(9);
-var decodeComponent = __webpack_require__(10);
+var strictUriEncode = __webpack_require__(9);
+var objectAssign = __webpack_require__(10);
+var decodeComponent = __webpack_require__(11);
 
 function encoderForArrayFormat(opts) {
 	switch (opts.arrayFormat) {
@@ -1008,7 +1047,7 @@ exports.stringify = function (obj, opts) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1021,7 +1060,7 @@ module.exports = function (str) {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1118,7 +1157,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1219,67 +1258,191 @@ module.exports = function (encodedURI) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const chroma = __webpack_require__(12)
+__webpack_require__(13)
 
-class Pitch {
-  static noteNumbers() {
-    return {
-      'C': 40,
-      'C#': 41,
-      'D': 42,
-      'D#': 43,
-      'E': 44,
-      'F': 45,
-      'F#': 46,
-      'G': 47,
-      'G#': 48,
-      'A': 49,
-      'A#': 50,
-      'B': 51,
-      'c': 52,
-      'c#': 53,
-      'd': 54,
-      'd#': 55,
-      'e': 56,
-      'f': 57
+const Pitch = __webpack_require__(2)
+const Canvas = __webpack_require__(3)
+const Key = __webpack_require__(20)
+const Synth = __webpack_require__(23)
+
+class Instrument {
+  constructor(useColor) {
+    this.useColor = useColor
+
+    this.html = document.createElement('div')
+    this.html.classList.add('instrument-object')
+
+    this.width = window.innerWidth
+    this.height = window.innerHeight
+
+    this.loadingElement = document.createElement('div')
+    this.loadingElement.classList.add('loading')
+    this.loadingElement.style.width = window.innerWidth;
+    this.loadingElement.style.height = window.innerHeight;
+    this.loadingElement.innerText = 'hello! please stand by...'
+    this.html.appendChild(this.loadingElement)
+
+    this.keyContainer = document.createElement('div')
+    this.keyContainer.classList.add('key-container')
+    this.keyContainer.style.width = this.width
+    this.html.appendChild(this.keyContainer)
+
+    this.canvasContainer = document.createElement('div')
+    this.canvasContainer.classList.add('canvas-container')
+    this.canvasContainer.style.width = this.width
+    this.canvasContainer.style.height = this.height
+    this.html.appendChild(this.canvasContainer)
+  }
+
+  initialize() {
+    this.keyMap = {
+      'a': new Pitch('C'),
+      'w': new Pitch('C#'),
+      's': new Pitch('D'),
+      'e': new Pitch('D#'),
+      'd': new Pitch('E'),
+      'f': new Pitch('F'),
+      't': new Pitch('F#'),
+      'g': new Pitch('G'),
+      'y': new Pitch('G#'),
+      'h': new Pitch('A'),
+      'u': new Pitch('A#'),
+      'j': new Pitch('B'),
+      'k': new Pitch('c'),
+      'o': new Pitch('c#'),
+      'l': new Pitch('d'),
+      'p': new Pitch('d#'),
+      ';': new Pitch('e'),
+      "'": new Pitch('f'),
     }
+
+    const canvases = {}
+    const synth = new Synth()
+
+    for (let keyName in this.keyMap) {
+      const pitch = this.keyMap[keyName]
+      const canvas = Canvas.fromPitches([pitch], this.width, this.height, this.useColor)
+      canvases[pitch.note] = canvas
+      this.canvasContainer.appendChild(canvas.html)
+
+      const key = new Key(keyName, pitch, () => {
+        canvas.show()
+        synth.play(pitch)
+      }, () => {
+        canvas.hide()
+        synth.stop(pitch)
+      }, this.useColor)
+
+      this.keyContainer.appendChild(key.html)
+
+      this.keyMap[keyName] = key
+    }
+
+    document.addEventListener('keydown', (event) => {
+      this._keyDown(event)
+    })
+
+    document.addEventListener('keyup', (event) => {
+      this._keyUp(event)
+    })
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        for (let key in canvases) {
+          canvases[key].hide()
+        }
+
+        this.loadingElement.classList.add('hidden')
+        this.loadingElement.addEventListener('animationend', () => {
+          this.loadingElement.style.display = 'none'
+        })
+
+        this.active = true;
+      })
+    })
   }
 
-  static visualFrequencyFromNumber(noteNumber) {
-    return 0.6 * Math.pow(1.059463, noteNumber - 49)
-  }
-
-  static frequencyFromNumber(noteNumber) {
-    return 440 * Math.pow(1.0594630943592953, noteNumber - 49)
-  }
-
-  constructor(arg) {
-    if (typeof(arg) === 'string') {
-      if (arg in Pitch.noteNumbers()) {
-        this.number = Pitch.noteNumbers()[arg]
-        this.note = arg
-      } else {
-        throw new Error('pitch constructed with invalid note name')
+  _keyDown(event) {
+    if (this.active) {
+      if (event.key in this.keyMap) {
+        this.keyMap[event.key].down()
       }
-    } else if (typeof(arg) === 'number') {
-      this.number = arg
-      this.note = Object.keys(Pitch.noteNumbers()).find(key => Pitch.noteNumbers()[key] === this.number)
     }
+  }
 
-    this.visualFrequency = Pitch.visualFrequencyFromNumber(this.number)
-    this.frequency = Pitch.frequencyFromNumber(this.number)
-    this.color = chroma.hcl((this.number % 12) * 360/13, 80, 50).hex()
+  _keyUp(event) {
+    if (this.active) {
+      if (event.key in this.keyMap) {
+        this.keyMap[event.key].up()
+      }
+    }
+  }
+
+  activate() {
+    this.active = true
+  }
+  
+  deactivate() {
+    this.active = false
+    for (let keyName in this.keyMap) {
+      this.keyMap[event.key].up()
+    }
   }
 }
 
-module.exports = Pitch
+module.exports = Instrument
 
 
 /***/ }),
-/* 12 */
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(14);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// Prepare cssTransformation
+var transform;
+
+var options = {"hmr":true}
+options.transform = transform
+// add the styles to the DOM
+var update = __webpack_require__(1)(content, options);
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./instrument.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./instrument.less");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(0)(false);
+// imports
+
+
+// module
+exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n}\n.instrument-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.instrument-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n.instrument-object .canvas-container {\n  position: relative;\n}\n.instrument-object .key-container {\n  position: absolute;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
@@ -4027,10 +4190,10 @@ module.exports = Pitch
 
 }).call(this);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)(module)))
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -4058,86 +4221,13 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(15)
-const Point = __webpack_require__(2)
-
-const Random = {
-  inRange: (low, high) => {
-    return (high - low) * Math.random() + low
-  }
-}
-
-class Canvas {
-  constructor(canvasElement, useColor) {
-    this.useColor = useColor
-    this.html = document.createElement('div')
-    this.html.classList.add('canvas-object')
-    this.canvas = canvasElement
-    this.html.appendChild(this.canvas)
-    this.context = this.canvas.getContext('2d')
-  }
-
-  clear() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
-  }
-
-  center() {
-    return new Point(this.canvas.width/2, this.canvas.height/2)
-  }
-
-  randomPoint() {
-    return new Point(Math.random()*this.canvas.width, Math.random()*this.canvas.height)
-  }
-
-  drawPitch(pitch) {
-    this.context.fillStyle = this.useColor ? pitch.color : 'black'
-    for (let i = 0; i < 800000; i++) {
-      let dot = this.randomPoint()
-      if (Math.sin(dot.distanceFrom(this.center())*pitch.visualFrequency) > Random.inRange(-1, 1)) {
-        this.context.fillRect(dot.x, dot.y, 0.8, 0.8)
-      }
-    }
-  }
-
-  static fromPitches(pitches, width, height, useColor) {
-    const canvasElement = document.createElement('canvas')
-    canvasElement.width = width
-    canvasElement.height = height
-    const canvas = new Canvas(canvasElement, useColor)
-
-    for (let i in pitches) {
-      canvas.drawPitch(pitches[i])
-    }
-
-    return canvas
-  }
-
-  // Potentially for another class
-  show() {
-    this.html.classList.remove('hidden')
-    this.html.classList.add('visible')
-  }
-
-  hide() {
-    this.html.classList.remove('visible')
-    this.html.classList.add('hidden')
-  }
-}
-
-module.exports = Canvas
-
-
-/***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(16);
+var content = __webpack_require__(18);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4162,7 +4252,7 @@ if(false) {
 }
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4176,10 +4266,36 @@ exports.push([module.i, "/* Not useful at the moment, or maybe ever;\n   the bro
 
 
 /***/ }),
-/* 17 */
+/* 19 */
+/***/ (function(module, exports) {
+
+class Point {
+  constructor(x, y) {
+    this.x = x
+    this.y = y
+  }
+
+  distanceFrom(point) {
+    return Math.sqrt(Math.pow(point.x - this.x, 2) + Math.pow(point.y - this.y, 2))
+  }
+
+  offset(x, y) {
+    return new Point(this.x + x, this.y + y);
+  }
+  
+  static fromEvent (event) {
+    return new Point(event.clientX, event.clientY)
+  }
+}
+
+module.exports = Point
+
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(18)
+__webpack_require__(21)
 
 class Key {
   constructor(key, pitch, onDown, onUp, useColor) {
@@ -4223,13 +4339,13 @@ module.exports = Key
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(19);
+var content = __webpack_require__(22);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4254,7 +4370,7 @@ if(false) {
 }
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4268,7 +4384,7 @@ exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\
 
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(module, exports) {
 
 class Synth {
@@ -4306,6 +4422,117 @@ class Synth {
 }
 
 module.exports = Synth
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(25)
+const Pitch = __webpack_require__(2)
+const Canvas = __webpack_require__(3)
+
+class Gallery {
+  constructor(useColor) {
+    this.useColor = useColor
+
+    this.html = document.createElement('div')
+    this.html.classList.add('gallery-object')
+
+    this.width = window.innerWidth
+    this.height = window.innerHeight
+
+    // DRY up in new component
+    this.loadingElement = document.createElement('div')
+    this.loadingElement.classList.add('loading')
+    this.loadingElement.style.width = window.innerWidth;
+    this.loadingElement.style.height = window.innerHeight;
+    this.loadingElement.innerText = 'hello! please stand by...'
+    this.html.appendChild(this.loadingElement)
+
+    // this.canvasDisplay = document.createElement('div')
+    // this.canvasDisplay.classList.add('canvas-display')
+    // this.canvasDisplay.style.width = window.innerWidth;
+    // this.canvasDisplay.style.height = window.innerHeight;
+    // this.html.appendChild(this.canvasDisplay)
+  }
+
+  initialize() {
+    const pitches = []
+    for (let i = 40; i < 53; i++) {
+      pitches.push(new Pitch(i))
+    }
+    
+    const limitingDimension = Math.min(this.width, this.height)
+    const width = limitingDimension - limitingDimension / 5
+    const height = width
+
+    for (let i in pitches) {
+      const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor)
+      canvas.html.style.position = 'inherit'
+      const wrapperDiv = document.createElement('div')
+      wrapperDiv.classList.add('canvas-wrapper')
+      wrapperDiv.appendChild(canvas.html)
+      this.html.appendChild(wrapperDiv)
+    }
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.loadingElement.classList.add('hidden')
+        this.loadingElement.addEventListener('animationend', () => {
+          this.loadingElement.style.display = 'none'
+        })
+      })
+    })
+  }
+}
+
+module.exports = Gallery
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(26);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// Prepare cssTransformation
+var transform;
+
+var options = {"hmr":true}
+options.transform = transform
+// add the styles to the DOM
+var update = __webpack_require__(1)(content, options);
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./gallery.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./gallery.less");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(0)(false);
+// imports
+
+
+// module
+exports.push([module.i, ".gallery-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n}\n.gallery-object .canvas-wrapper {\n  display: flex;\n  justify-content: center;\n  margin: 10px;\n  flex-basis: 100%;\n}\n.gallery-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.gallery-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n", ""]);
+
+// exports
 
 
 /***/ })

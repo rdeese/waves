@@ -1,0 +1,30 @@
+@import "variables";
+
+body {
+  margin: 0;
+  font-family: monospace;
+}
+
+.arrow {
+  color: @darkGrey;
+  background-color: @lightGrey;
+  padding: 6px 10px 0px 10px;
+  text-align: center;
+  font-size: 1.2em;
+  border-radius: 2px;
+
+  position: absolute;
+  bottom: 8px;
+
+  z-index: 300;
+  height: 25px;
+  opacity: 0.6;
+
+  &.left {
+    left: 30px;
+  }
+
+  &.right {
+    right: 30px;
+  }
+}
