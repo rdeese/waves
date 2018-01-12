@@ -521,6 +521,52 @@ function updateLink (link, options, obj) {
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
+__webpack_require__(25)
+class Overlay {
+  constructor(content, width, height, hidden) {
+    this.html = document.createElement('div')
+    this.html.classList.add('overlay-object')
+    this.html.style.width = width
+    this.html.style.height = height
+    if (typeof(content) == 'string') {
+      this.html.innerText = content
+    } else if (typeof(content) == 'object') {
+      this.html.appendChild(content)
+    } else {
+      throw new Error('Overlay initialized with invalid content type.')
+    }
+    this.hidden = !!hidden
+    if (this.hidden) {
+      this.html.style.display = 'none'
+    }
+  }
+
+  hide() {
+    this.hidden = true
+    this.html.classList.remove('reveal')
+    this.html.classList.add('hide')
+    const onEnd = (() => {
+      this.html.style.display = 'none'
+      this.html.removeEventListener('animationend', onEnd)
+    }).bind(this)
+    const listener = this.html.addEventListener('animationend', onEnd)
+  }
+
+  show() {
+    this.hidden = false
+    this.html.style.display = 'flex'
+    this.html.classList.remove('hide')
+    this.html.classList.add('reveal')
+  }
+}
+
+module.exports = Overlay
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
 const chroma = __webpack_require__(16)
 
 class Pitch {
@@ -578,7 +624,7 @@ module.exports = Pitch
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(18)
@@ -651,36 +697,6 @@ module.exports = Canvas
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(25)
-class Overlay {
-  constructor(text, width, height) {
-    this.html = document.createElement('div')
-    this.html.classList.add('overlay-object')
-    this.html.style.width = width
-    this.html.style.height = height
-    this.html.innerText = text
-  }
-
-  hide() {
-    this.html.classList.add('hidden')
-    this.html.addEventListener('animationend', () => {
-      this.html.style.display = 'none'
-    })
-  }
-
-  show() {
-      this.html.style.display = 'unset'
-    this.html.classList.remove('hidden')
-  }
-}
-
-module.exports = Overlay
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -688,10 +704,40 @@ __webpack_require__(6)
 const queryString = __webpack_require__(9)
 const Instrument = __webpack_require__(13)
 const Gallery = __webpack_require__(27)
+const Button = __webpack_require__(30)
+const Overlay = __webpack_require__(2)
 
 const main = () => {
   const userParams = queryString.parse(location.search);
   const useColor = !!userParams.colorful
+
+  const helpOverlayContents = document.createElement('div')
+  helpOverlayContents.classList.add('help-contents')
+  const helpText = document.createElement('div')
+  helpText.innerHTML = `
+  <h4>Waves (2018)</h4>
+  <p>
+    ${useColor ? 'Color' : 'Black'} dots on transparent canvas.
+  </p>
+  <p>
+    Dots are chosen randomly according to probabilities given by a sine wave. The wavelengths are proportional to those of musical pitches in air.
+  </p>
+  `
+  helpOverlayContents.appendChild(helpText)
+  const helpHideButton = new Button('thanks', () => {
+    helpOverlay.hide()
+  })
+  helpHideButton.html.style.position = 'inherit'
+  helpOverlayContents.appendChild(helpHideButton.html)
+
+  const helpOverlay = new Overlay(helpOverlayContents, window.innerWidth, window.innerHeight, true)
+  document.body.appendChild(helpOverlay.html)
+
+  const helpShowButton = new Button('?', () => {
+    helpOverlay.show()
+  })
+  helpShowButton.html.classList.add('left')
+  document.body.appendChild(helpShowButton.html)
 
   const gallery = new Gallery(useColor)
   document.body.appendChild(gallery.html)
@@ -722,21 +768,19 @@ const main = () => {
     }
   }
 
-  const galleryArrow = document.createElement('div')
-  galleryArrow.classList.add('arrow', 'right')
-  galleryArrow.innerText = 'play instrument'
-  galleryArrow.addEventListener('click', () => {
+  const viewToggleButton = new Button('play instrument', () => {
     if (onGallery) {
       showInstrument()
-      galleryArrow.innerText = 'view gallery'
+      viewToggleButton.html.innerText = 'view gallery'
       onGallery = false
     } else {
       showGallery()
-      galleryArrow.innerText = 'play instrument'
+      viewToggleButton.html.innerText = 'play instrument'
       onGallery = true
     }
   })
-  document.body.appendChild(galleryArrow)
+  viewToggleButton.html.classList.add('right')
+  document.body.appendChild(viewToggleButton.html)
 
   setTimeout(() => {
     gallery.initialize()
@@ -786,7 +830,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: fixed;\n  top: 20px;\n  z-index: 100;\n  height: 25px;\n  opacity: 0.6;\n  cursor: pointer;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
+exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.help-contents {\n  width: 250px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n}\n", ""]);
 
 // exports
 
@@ -1320,11 +1364,11 @@ module.exports = function (encodedURI) {
 
 __webpack_require__(14)
 
-const Pitch = __webpack_require__(2)
-const Canvas = __webpack_require__(3)
+const Pitch = __webpack_require__(3)
+const Canvas = __webpack_require__(4)
 const Key = __webpack_require__(21)
 const Synth = __webpack_require__(24)
-const Overlay = __webpack_require__(4)
+const Overlay = __webpack_require__(2)
 
 class Instrument {
   constructor(useColor) {
@@ -4517,7 +4561,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".overlay-object {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.overlay-object.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n", ""]);
+exports.push([module.i, ".overlay-object {\n  position: fixed;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.overlay-object.hide {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n.overlay-object.reveal {\n  animation-duration: 2s;\n  animation-name: appear;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n@keyframes appear {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n", ""]);
 
 // exports
 
@@ -4527,9 +4571,9 @@ exports.push([module.i, ".overlay-object {\n  position: absolute;\n  top: 0;\n  
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(28)
-const Pitch = __webpack_require__(2)
-const Canvas = __webpack_require__(3)
-const Overlay = __webpack_require__(4)
+const Pitch = __webpack_require__(3)
+const Canvas = __webpack_require__(4)
+const Overlay = __webpack_require__(2)
 
 class Gallery {
   constructor(useColor) {
@@ -4628,6 +4672,71 @@ exports = module.exports = __webpack_require__(0)(false);
 
 // module
 exports.push([module.i, ".gallery-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n}\n.gallery-object .canvas-wrapper {\n  display: flex;\n  justify-content: center;\n  margin: 10px;\n  flex-basis: 100%;\n}\n.gallery-object .title {\n  position: absolute;\n  bottom: 0;\n  right: -77;\n  margin: 10px;\n  font-size: 1.2em;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(31)
+
+class Button {
+  constructor(text, onClick) {
+    this.html = document.createElement('div')
+    this.html.classList.add('button-object')
+    this.html.innerText = text
+    this.html.addEventListener('click', () => {
+      onClick()
+    })
+  }
+}
+
+module.exports = Button
+
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(32);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// Prepare cssTransformation
+var transform;
+
+var options = {"hmr":true}
+options.transform = transform
+// add the styles to the DOM
+var update = __webpack_require__(1)(content, options);
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./button.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/less-loader/dist/cjs.js!./button.less");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(0)(false);
+// imports
+
+
+// module
+exports.push([module.i, ".button-object {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: fixed;\n  top: 20px;\n  z-index: 100;\n  height: 25px;\n  opacity: 0.6;\n  cursor: pointer;\n}\n.button-object.left {\n  left: 30px;\n}\n.button-object.right {\n  right: 30px;\n}\n", ""]);
 
 // exports
 

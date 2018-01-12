@@ -1,5 +1,3 @@
-@import "variables";
-
 body {
   margin: 0;
   font-family: monospace;
@@ -8,28 +6,10 @@ body {
   justify-content: center;
 }
 
-.arrow {
-  color: @darkGrey;
-  background-color: @lightGrey;
-  padding: 6px 10px 0px 10px;
-  text-align: center;
-  font-size: 1.2em;
-  border-radius: 2px;
-
-  position: fixed;
-  top: 20px;
-
-  z-index: 100;
-  height: 25px;
-  opacity: 0.6;
-
-  cursor: pointer;
-
-  &.left {
-    left: 30px;
-  }
-
-  &.right {
-    right: 30px;
-  }
+.help-contents {
+  width: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }

@@ -1,5 +1,5 @@
 .overlay-object {
-  position: absolute;
+  position: fixed;
   top: 0;
   z-index: 200;
   background-color: white;
@@ -7,9 +7,15 @@
   align-items: center;
   justify-content: center;
 
-  &.hidden {
+  &.hide {
     animation-duration: 2s;
     animation-name: vanish;
+    animation-fill-mode: forwards;
+  }
+
+  &.reveal {
+    animation-duration: 2s;
+    animation-name: appear;
     animation-fill-mode: forwards;
   }
 }
@@ -21,5 +27,15 @@
 
   to {
     opacity: 0;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
