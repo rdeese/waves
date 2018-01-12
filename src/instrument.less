@@ -1,0 +1,52 @@
+.instrument-object {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+  font-family: monospace;
+
+  .loading {
+    position: absolute;
+    top: 0;
+    z-index: 200;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loading.hidden {
+    animation-duration: 2s;
+    animation-name: vanish;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes vanish {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  .canvas-container {
+    position: relative;
+  }
+
+  .key-container {
+    position: absolute;
+    bottom: 0;
+    z-index: 100;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    height: 100px;
+  }
+}
