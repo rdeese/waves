@@ -7,18 +7,23 @@ const Overlay = require('./Overlay')
 
 const main = () => {
   const userParams = queryString.parse(location.search);
-  const useColor = !!userParams.colorful
+  const useColor = userParams.colorful === 'true'
+  const highDef = userParams.highDef === 'true'
 
   const helpOverlayContents = document.createElement('div')
   helpOverlayContents.classList.add('help-contents')
   const helpText = document.createElement('div')
   helpText.innerHTML = `
-  <h4>Waves (2018)</h4>
   <p>
-    ${useColor ? 'Color' : 'Black'} dots on transparent canvas.
+    Created by Rupert Deese
   </p>
   <p>
-    Dots are chosen randomly according to probabilities given by a sine wave. The wavelengths are proportional to those of musical pitches in air.
+    Reload <a href='?colorful=${!useColor}'>${useColor ? 'in black' : 'in color'},</a>
+    <a href='?highDef=${!highDef}'>${highDef ? 'in low definition' : 'in high definition'},</a>
+    <a href='?highDef=${!highDef}&colorful=${!useColor}'>or both.</a>
+  </p>
+  <p>
+    View the <a href='https://github.com/rdeese/waves'>source code.</a>
   </p>
   `
   helpOverlayContents.appendChild(helpText)
@@ -37,10 +42,10 @@ const main = () => {
   helpShowButton.html.classList.add('left')
   document.body.appendChild(helpShowButton.html)
 
-  const gallery = new Gallery(useColor)
+  const gallery = new Gallery(useColor, highDef)
   document.body.appendChild(gallery.html)
 
-  const instrument = new Instrument(useColor)
+  const instrument = new Instrument(useColor, highDef)
   document.body.appendChild(instrument.html)
   instrument.html.style.display = 'none'
 

@@ -7,10 +7,11 @@ const Synth = require('./Synth')
 const Overlay = require('./Overlay')
 
 class Instrument {
-  constructor(useColor) {
+  constructor(useColor, highDef) {
     this.initialized = false;
     this.active = false;
     this.useColor = useColor
+    this.highDef = highDef
 
     this.html = document.createElement('div')
     this.html.classList.add('instrument-object')
@@ -59,7 +60,7 @@ class Instrument {
 
     for (let keyName in this.keyMap) {
       const pitch = this.keyMap[keyName]
-      const canvas = Canvas.fromPitches([pitch], this.width, this.height, this.useColor)
+      const canvas = Canvas.fromPitches([pitch], this.width, this.height, this.useColor, this.highDef)
       canvases[pitch.note] = canvas
       this.canvasContainer.appendChild(canvas.html)
 

@@ -4,9 +4,10 @@ const Canvas = require('./Canvas')
 const Overlay = require('./Overlay')
 
 class Gallery {
-  constructor(useColor) {
+  constructor(useColor, highDef) {
     this.initialized = false;
     this.useColor = useColor
+    this.highDef = highDef
 
     this.html = document.createElement('div')
     this.html.classList.add('gallery-object')
@@ -34,8 +35,22 @@ class Gallery {
     const width = limitingDimension - limitingDimension / 5
     const height = width
 
+
+    const introText = document.createElement('div')
+    introText.style.width = limitingDimension - limitingDimension / 4
+    introText.innerHTML = `
+    <h4>Waves (2018)</h4>
+    <p>
+      ${this.useColor ? 'Color' : 'Black'} dots on transparent canvas.
+    </p>
+    <p>
+      Dots are placed randomly according to probabilities given by a sine wave. The chosen wavelengths are proportional to those of musical pitches in air.
+    </p>
+    `
+    this.html.appendChild(introText)
+
     for (let i in pitches) {
-      const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor)
+      const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor, this.highDef)
       canvas.html.style.position = 'relative'
       const wrapperDiv = document.createElement('div')
       wrapperDiv.classList.add('canvas-wrapper')

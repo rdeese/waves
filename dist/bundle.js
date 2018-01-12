@@ -637,13 +637,17 @@ const Random = {
 }
 
 class Canvas {
-  constructor(canvasElement, useColor) {
+  constructor(canvasElement, useColor, highDef) {
     this.useColor = useColor
+    this.highDef = highDef
     this.html = document.createElement('div')
     this.html.classList.add('canvas-object')
     this.canvas = canvasElement
     this.html.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
+
+    const area = this.canvas.width * this.canvas.height
+    this.numDots = area / (this.highDef ? 1 : 1.5)
   }
 
   clear() {
@@ -660,7 +664,7 @@ class Canvas {
 
   drawPitch(pitch) {
     this.context.fillStyle = this.useColor ? pitch.color : 'black'
-    for (let i = 0; i < 80000; i++) {
+    for (let i = 0; i < this.numDots; i++) {
       let dot = this.randomPoint()
       if (Math.sin(dot.distanceFrom(this.center())*pitch.visualFrequency) > Random.inRange(-1, 1)) {
         this.context.fillRect(dot.x, dot.y, 0.8, 0.8)
@@ -668,11 +672,11 @@ class Canvas {
     }
   }
 
-  static fromPitches(pitches, width, height, useColor) {
+  static fromPitches(pitches, width, height, useColor, highDef) {
     const canvasElement = document.createElement('canvas')
     canvasElement.width = width
     canvasElement.height = height
-    const canvas = new Canvas(canvasElement, useColor)
+    const canvas = new Canvas(canvasElement, useColor, highDef)
 
     for (let i in pitches) {
       canvas.drawPitch(pitches[i])
@@ -709,18 +713,23 @@ const Overlay = __webpack_require__(2)
 
 const main = () => {
   const userParams = queryString.parse(location.search);
-  const useColor = !!userParams.colorful
+  const useColor = userParams.colorful === 'true'
+  const highDef = userParams.highDef === 'true'
 
   const helpOverlayContents = document.createElement('div')
   helpOverlayContents.classList.add('help-contents')
   const helpText = document.createElement('div')
   helpText.innerHTML = `
-  <h4>Waves (2018)</h4>
   <p>
-    ${useColor ? 'Color' : 'Black'} dots on transparent canvas.
+    Created by Rupert Deese
   </p>
   <p>
-    Dots are chosen randomly according to probabilities given by a sine wave. The wavelengths are proportional to those of musical pitches in air.
+    Reload <a href='?colorful=${!useColor}'>${useColor ? 'in black' : 'in color'},</a>
+    <a href='?highDef=${!highDef}'>${highDef ? 'in low definition' : 'in high definition'},</a>
+    <a href='?highDef=${!highDef}&colorful=${!useColor}'>or both.</a>
+  </p>
+  <p>
+    View the <a href='https://github.com/rdeese/waves'>source code.</a>
   </p>
   `
   helpOverlayContents.appendChild(helpText)
@@ -739,10 +748,10 @@ const main = () => {
   helpShowButton.html.classList.add('left')
   document.body.appendChild(helpShowButton.html)
 
-  const gallery = new Gallery(useColor)
+  const gallery = new Gallery(useColor, highDef)
   document.body.appendChild(gallery.html)
 
-  const instrument = new Instrument(useColor)
+  const instrument = new Instrument(useColor, highDef)
   document.body.appendChild(instrument.html)
   instrument.html.style.display = 'none'
 
@@ -1371,10 +1380,11 @@ const Synth = __webpack_require__(24)
 const Overlay = __webpack_require__(2)
 
 class Instrument {
-  constructor(useColor) {
+  constructor(useColor, highDef) {
     this.initialized = false;
     this.active = false;
     this.useColor = useColor
+    this.highDef = highDef
 
     this.html = document.createElement('div')
     this.html.classList.add('instrument-object')
@@ -1423,7 +1433,7 @@ class Instrument {
 
     for (let keyName in this.keyMap) {
       const pitch = this.keyMap[keyName]
-      const canvas = Canvas.fromPitches([pitch], this.width, this.height, this.useColor)
+      const canvas = Canvas.fromPitches([pitch], this.width, this.height, this.useColor, this.highDef)
       canvases[pitch.note] = canvas
       this.canvasContainer.appendChild(canvas.html)
 
@@ -4576,9 +4586,10 @@ const Canvas = __webpack_require__(4)
 const Overlay = __webpack_require__(2)
 
 class Gallery {
-  constructor(useColor) {
+  constructor(useColor, highDef) {
     this.initialized = false;
     this.useColor = useColor
+    this.highDef = highDef
 
     this.html = document.createElement('div')
     this.html.classList.add('gallery-object')
@@ -4606,8 +4617,22 @@ class Gallery {
     const width = limitingDimension - limitingDimension / 5
     const height = width
 
+
+    const introText = document.createElement('div')
+    introText.style.width = limitingDimension - limitingDimension / 4
+    introText.innerHTML = `
+    <h4>Waves (2018)</h4>
+    <p>
+      ${this.useColor ? 'Color' : 'Black'} dots on transparent canvas.
+    </p>
+    <p>
+      Dots are placed randomly according to probabilities given by a sine wave. The chosen wavelengths are proportional to those of musical pitches in air.
+    </p>
+    `
+    this.html.appendChild(introText)
+
     for (let i in pitches) {
-      const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor)
+      const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor, this.highDef)
       canvas.html.style.position = 'relative'
       const wrapperDiv = document.createElement('div')
       wrapperDiv.classList.add('canvas-wrapper')
