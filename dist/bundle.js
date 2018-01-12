@@ -675,7 +675,7 @@ const main = () => {
   galleryArrow.innerText = 'view gallery'
   galleryArrow.addEventListener('click', () => {
     instrument.html.style.display = 'none'
-    gallery.html.style.display = 'block'
+    gallery.html.style.display = 'flex'
     if (instrument.initialized) {
       instrument.deactivate()
     }
@@ -688,7 +688,7 @@ const main = () => {
   document.body.appendChild(instrumentArrow)
   instrumentArrow.addEventListener('click', () => {
     gallery.html.style.display = 'none'
-    instrument.html.style.display = 'block'
+    instrument.html.style.display = 'flex'
     if (!instrument.initialized) {
       setTimeout(() => {
         instrument.initialize()
@@ -746,7 +746,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: fixed;\n  bottom: 8px;\n  z-index: 100;\n  height: 25px;\n  opacity: 0.6;\n  cursor: pointer;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
+exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: fixed;\n  top: 20px;\n  z-index: 100;\n  height: 25px;\n  opacity: 0.6;\n  cursor: pointer;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
 
 // exports
 
@@ -1306,7 +1306,6 @@ class Instrument {
 
     this.keyContainer = document.createElement('div')
     this.keyContainer.classList.add('key-container')
-    this.keyContainer.style.width = this.width
     this.html.appendChild(this.keyContainer)
 
     this.canvasContainer = document.createElement('div')
@@ -1456,7 +1455,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n}\n.instrument-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.instrument-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n.instrument-object .canvas-container {\n  position: relative;\n}\n.instrument-object .key-container {\n  position: absolute;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n}\n", ""]);
+exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n}\n.instrument-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.instrument-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n.instrument-object .canvas-container {\n  position: relative;\n}\n.instrument-object .key-container {\n  position: fixed;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n  width: 100%;\n}\n", ""]);
 
 // exports
 

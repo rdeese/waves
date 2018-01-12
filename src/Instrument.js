@@ -26,7 +26,6 @@ class Instrument {
 
     this.keyContainer = document.createElement('div')
     this.keyContainer.classList.add('key-container')
-    this.keyContainer.style.width = this.width
     this.html.appendChild(this.keyContainer)
 
     this.canvasContainer = document.createElement('div')

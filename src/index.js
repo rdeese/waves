@@ -19,7 +19,7 @@ const main = () => {
   galleryArrow.innerText = 'view gallery'
   galleryArrow.addEventListener('click', () => {
     instrument.html.style.display = 'none'
-    gallery.html.style.display = 'block'
+    gallery.html.style.display = 'flex'
     if (instrument.initialized) {
       instrument.deactivate()
     }
@@ -32,7 +32,7 @@ const main = () => {
   document.body.appendChild(instrumentArrow)
   instrumentArrow.addEventListener('click', () => {
     gallery.html.style.display = 'none'
-    instrument.html.style.display = 'block'
+    instrument.html.style.display = 'flex'
     if (!instrument.initialized) {
       setTimeout(() => {
         instrument.initialize()
