@@ -4,6 +4,7 @@ const Canvas = require('./Canvas')
 
 class Gallery {
   constructor(useColor) {
+    this.initialized = false;
     this.useColor = useColor
 
     this.html = document.createElement('div')
@@ -39,10 +40,14 @@ class Gallery {
 
     for (let i in pitches) {
       const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor)
-      canvas.html.style.position = 'inherit'
+      canvas.html.style.position = 'relative'
       const wrapperDiv = document.createElement('div')
       wrapperDiv.classList.add('canvas-wrapper')
       wrapperDiv.appendChild(canvas.html)
+      const titleDiv = document.createElement('div')
+      titleDiv.classList.add('title')
+      canvas.html.appendChild(titleDiv)
+      titleDiv.innerText = `${pitches[i].note} / ${pitches[0].note}`
       this.html.appendChild(wrapperDiv)
     }
 
@@ -52,6 +57,7 @@ class Gallery {
         this.loadingElement.addEventListener('animationend', () => {
           this.loadingElement.style.display = 'none'
         })
+        this.initialized = true;
       })
     })
   }

@@ -7,6 +7,8 @@ const Synth = require('./Synth')
 
 class Instrument {
   constructor(useColor) {
+    this.initialized = false;
+    this.active = false;
     this.useColor = useColor
 
     this.html = document.createElement('div')
@@ -98,6 +100,7 @@ class Instrument {
         })
 
         this.active = true;
+        this.initialized = true;
       })
     })
   }

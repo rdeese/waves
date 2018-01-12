@@ -660,30 +660,47 @@ const Instrument = __webpack_require__(12)
 const Gallery = __webpack_require__(24)
 
 const main = () => {
+  const userParams = queryString.parse(location.search);
+  const useColor = !!userParams.colorful
+
+  const gallery = new Gallery(useColor)
+  document.body.appendChild(gallery.html)
+
+  const instrument = new Instrument(useColor)
+  document.body.appendChild(instrument.html)
+  instrument.html.style.display = 'none'
+
   const galleryArrow = document.createElement('div')
   galleryArrow.classList.add('arrow', 'left')
   galleryArrow.innerText = 'view gallery'
+  galleryArrow.addEventListener('click', () => {
+    instrument.html.style.display = 'none'
+    gallery.html.style.display = 'block'
+    if (instrument.initialized) {
+      instrument.deactivate()
+    }
+  })
   document.body.appendChild(galleryArrow)
 
   const instrumentArrow = document.createElement('div')
   instrumentArrow.classList.add('arrow', 'right')
   instrumentArrow.innerText = 'play instrument'
   document.body.appendChild(instrumentArrow)
+  instrumentArrow.addEventListener('click', () => {
+    gallery.html.style.display = 'none'
+    instrument.html.style.display = 'block'
+    if (!instrument.initialized) {
+      setTimeout(() => {
+        instrument.initialize()
+      }, 100)
+    } else {
+      instrument.activate()
+    }
+  })
 
-  const userParams = queryString.parse(location.search);
-  const useColor = !!userParams.colorful
-
-  const gallery = new Gallery(useColor)
-  document.body.appendChild(gallery.html)
   setTimeout(() => {
     gallery.initialize()
   }, 100)
-
-  //  const instrument = new Instrument(useColor)
-  //  document.body.appendChild(instrument.html)
-  //  setTimeout(() => {
-  //    instrument.initialize()
-  //  }, 100)
 }
 
 window.addEventListener('load', main)
@@ -729,7 +746,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: absolute;\n  bottom: 8px;\n  z-index: 300;\n  height: 25px;\n  opacity: 0.6;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
+exports.push([module.i, "body {\n  margin: 0;\n  font-family: monospace;\n}\n.arrow {\n  color: #333333;\n  background-color: #ECECEC;\n  padding: 6px 10px 0px 10px;\n  text-align: center;\n  font-size: 1.2em;\n  border-radius: 2px;\n  position: fixed;\n  bottom: 8px;\n  z-index: 100;\n  height: 25px;\n  opacity: 0.6;\n}\n.arrow.left {\n  left: 30px;\n}\n.arrow.right {\n  right: 30px;\n}\n", ""]);
 
 // exports
 
@@ -1270,6 +1287,8 @@ const Synth = __webpack_require__(23)
 
 class Instrument {
   constructor(useColor) {
+    this.initialized = false;
+    this.active = false;
     this.useColor = useColor
 
     this.html = document.createElement('div')
@@ -1361,6 +1380,7 @@ class Instrument {
         })
 
         this.active = true;
+        this.initialized = true;
       })
     })
   }
@@ -4434,6 +4454,7 @@ const Canvas = __webpack_require__(3)
 
 class Gallery {
   constructor(useColor) {
+    this.initialized = false;
     this.useColor = useColor
 
     this.html = document.createElement('div')
@@ -4469,10 +4490,14 @@ class Gallery {
 
     for (let i in pitches) {
       const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor)
-      canvas.html.style.position = 'inherit'
+      canvas.html.style.position = 'relative'
       const wrapperDiv = document.createElement('div')
       wrapperDiv.classList.add('canvas-wrapper')
       wrapperDiv.appendChild(canvas.html)
+      const titleDiv = document.createElement('div')
+      titleDiv.classList.add('title')
+      canvas.html.appendChild(titleDiv)
+      titleDiv.innerText = `${pitches[i].note} / ${pitches[0].note}`
       this.html.appendChild(wrapperDiv)
     }
 
@@ -4482,6 +4507,7 @@ class Gallery {
         this.loadingElement.addEventListener('animationend', () => {
           this.loadingElement.style.display = 'none'
         })
+        this.initialized = true;
       })
     })
   }
@@ -4530,7 +4556,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".gallery-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n}\n.gallery-object .canvas-wrapper {\n  display: flex;\n  justify-content: center;\n  margin: 10px;\n  flex-basis: 100%;\n}\n.gallery-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.gallery-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n", ""]);
+exports.push([module.i, ".gallery-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n}\n.gallery-object .canvas-wrapper {\n  display: flex;\n  justify-content: center;\n  margin: 10px;\n  flex-basis: 100%;\n}\n.gallery-object .title {\n  position: absolute;\n  bottom: 0;\n  right: -77;\n  margin: 10px;\n  font-size: 1.2em;\n}\n.gallery-object .loading {\n  position: absolute;\n  top: 0;\n  z-index: 200;\n  background-color: white;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.gallery-object .loading.hidden {\n  animation-duration: 2s;\n  animation-name: vanish;\n  animation-fill-mode: forwards;\n}\n@keyframes vanish {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n", ""]);
 
 // exports
 
