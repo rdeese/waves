@@ -10,6 +10,7 @@ class Instrument {
   constructor(useColor, highDef) {
     this.initialized = false;
     this.active = false;
+    this.onMobile = window.orientation !== undefined
     this.useColor = useColor
     this.highDef = highDef
 
@@ -24,6 +25,9 @@ class Instrument {
 
     this.keyContainer = document.createElement('div')
     this.keyContainer.classList.add('key-container')
+    if (this.onMobile) {
+      this.keyContainer.classList.add('mobile')
+    }
     this.html.appendChild(this.keyContainer)
 
     this.canvasContainer = document.createElement('div')
@@ -47,12 +51,15 @@ class Instrument {
       'h': new Pitch('A'),
       'u': new Pitch('A#'),
       'j': new Pitch('B'),
-      'k': new Pitch('c'),
-      'o': new Pitch('c#'),
-      'l': new Pitch('d'),
-      'p': new Pitch('d#'),
-      ';': new Pitch('e'),
-      "'": new Pitch('f')
+      'k': new Pitch('c')
+    }
+
+    if (!this.onMobile) {
+      this.keyMap['o'] = new Pitch('c#');
+      this.keyMap['l'] = new Pitch('d');
+      this.keyMap['p'] = new Pitch('d#');
+      this.keyMap[';'] = new Pitch('e');
+      this.keyMap["'"] = new Pitch('f');
     }
 
     const canvases = {}
@@ -72,6 +79,9 @@ class Instrument {
         synth.stop(pitch)
       }, this.useColor)
 
+      if (this.onMobile) {
+        key.html.classList.add('mobile')
+      }
       this.keyContainer.appendChild(key.html)
 
       this.keyMap[keyName] = key

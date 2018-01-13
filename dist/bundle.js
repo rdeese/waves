@@ -1383,6 +1383,7 @@ class Instrument {
   constructor(useColor, highDef) {
     this.initialized = false;
     this.active = false;
+    this.onMobile = window.orientation !== undefined
     this.useColor = useColor
     this.highDef = highDef
 
@@ -1397,6 +1398,9 @@ class Instrument {
 
     this.keyContainer = document.createElement('div')
     this.keyContainer.classList.add('key-container')
+    if (this.onMobile) {
+      this.keyContainer.classList.add('mobile')
+    }
     this.html.appendChild(this.keyContainer)
 
     this.canvasContainer = document.createElement('div')
@@ -1420,12 +1424,15 @@ class Instrument {
       'h': new Pitch('A'),
       'u': new Pitch('A#'),
       'j': new Pitch('B'),
-      'k': new Pitch('c'),
-      'o': new Pitch('c#'),
-      'l': new Pitch('d'),
-      'p': new Pitch('d#'),
-      ';': new Pitch('e'),
-      "'": new Pitch('f')
+      'k': new Pitch('c')
+    }
+
+    if (!this.onMobile) {
+      this.keyMap['o'] = new Pitch('c#');
+      this.keyMap['l'] = new Pitch('d');
+      this.keyMap['p'] = new Pitch('d#');
+      this.keyMap[';'] = new Pitch('e');
+      this.keyMap["'"] = new Pitch('f');
     }
 
     const canvases = {}
@@ -1445,6 +1452,9 @@ class Instrument {
         synth.stop(pitch)
       }, this.useColor)
 
+      if (this.onMobile) {
+        key.html.classList.add('mobile')
+      }
       this.keyContainer.appendChild(key.html)
 
       this.keyMap[keyName] = key
@@ -1509,7 +1519,6 @@ class Instrument {
 
   touchStartCallback(event) {
     event.preventDefault()
-    console.log(event.targetTouches.length)
     for (let k in this.keyMap) {
       const key = this.keyMap[k]
       let isTouched = false
@@ -1590,7 +1599,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n}\n.instrument-object .canvas-container {\n  position: relative;\n}\n.instrument-object .key-container {\n  position: fixed;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n  width: 100%;\n}\n", ""]);
+exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  flex-direction: column;\n}\n.instrument-object .canvas-container {\n  position: relative;\n}\n.instrument-object .key-container {\n  position: fixed;\n  bottom: 0;\n  z-index: 100;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-wrap: wrap;\n  height: 100px;\n  width: 100%;\n}\n.instrument-object .key-container.mobile {\n  height: 120px;\n}\n", ""]);
 
 // exports
 
@@ -4536,7 +4545,7 @@ exports = module.exports = __webpack_require__(0)(false);
 
 
 // module
-exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\n  align-items: center;\n  flex-direction: column;\n  color: #333333;\n  background-color: #ECECEC;\n  width: 18px;\n  height: 40px;\n  font-size: 1.2em;\n  margin-left: 1px;\n  margin-right: 1px;\n  border-radius: 2px;\n}\n.key-object.sharp {\n  color: #ECECEC;\n  background-color: #333333;\n  margin-bottom: 15px;\n}\n.key-object.sharp .note-name {\n  background-color: #ECECEC;\n}\n.key-object.pressed .note-name {\n  visibility: visible;\n}\n.key-name {\n  position: absolute;\n  bottom: 0;\n  padding: 2px;\n  text-align: center;\n}\n.note-name {\n  width: 10px;\n  height: 10px;\n  border-radius: 5px;\n  background-color: #333333;\n  margin-top: 7px;\n  visibility: hidden;\n}\n", ""]);
+exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\n  align-items: center;\n  flex-direction: column;\n  color: #333333;\n  background-color: #ECECEC;\n  width: 18px;\n  height: 40px;\n  font-size: 1.2em;\n  margin-left: 1px;\n  margin-right: 1px;\n  border-radius: 2px;\n}\n.key-object.sharp {\n  color: #ECECEC;\n  background-color: #333333;\n  margin-bottom: 15px;\n}\n.key-object.sharp .note-name {\n  background-color: #ECECEC;\n}\n.key-object.pressed .note-name {\n  visibility: visible;\n}\n.key-object.mobile {\n  width: 40px;\n}\n.key-object.mobile .key-name,\n.key-object.mobile .note-name {\n  display: none;\n}\n.key-name {\n  position: absolute;\n  bottom: 0;\n  padding: 2px;\n  text-align: center;\n}\n.note-name {\n  width: 10px;\n  height: 10px;\n  border-radius: 5px;\n  background-color: #333333;\n  margin-top: 7px;\n  visibility: hidden;\n}\n", ""]);
 
 // exports
 
@@ -4666,7 +4675,6 @@ class Gallery {
     }
     
     const limitingDimension = Math.min(this.width, this.height)
-    console.log(this.width, this.height, limitingDimension)
     const width = limitingDimension - limitingDimension / 5
     const height = width
 
