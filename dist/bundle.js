@@ -521,7 +521,7 @@ function updateLink (link, options, obj) {
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(25)
+__webpack_require__(26)
 class Overlay {
   constructor(content, width, height, hidden) {
     this.html = document.createElement('div')
@@ -567,7 +567,7 @@ module.exports = Overlay
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const chroma = __webpack_require__(16)
+const chroma = __webpack_require__(17)
 
 class Pitch {
   static noteNumbers() {
@@ -627,8 +627,8 @@ module.exports = Pitch
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(18)
-const Point = __webpack_require__(20)
+__webpack_require__(19)
+const Point = __webpack_require__(21)
 
 const Random = {
   inRange: (low, high) => {
@@ -707,8 +707,8 @@ module.exports = Canvas
 __webpack_require__(6)
 const queryString = __webpack_require__(9)
 const Instrument = __webpack_require__(13)
-const Gallery = __webpack_require__(27)
-const Button = __webpack_require__(30)
+const Gallery = __webpack_require__(28)
+const Button = __webpack_require__(31)
 const Overlay = __webpack_require__(2)
 
 const main = () => {
@@ -1371,12 +1371,14 @@ module.exports = function (encodedURI) {
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(14)
+const keycode = __webpack_require__(14);
+
+__webpack_require__(15)
 
 const Pitch = __webpack_require__(3)
 const Canvas = __webpack_require__(4)
-const Key = __webpack_require__(21)
-const Synth = __webpack_require__(24)
+const Key = __webpack_require__(22)
+const Synth = __webpack_require__(25)
 const Overlay = __webpack_require__(2)
 
 class Instrument {
@@ -1492,16 +1494,18 @@ class Instrument {
 
   _keyDown(event) {
     if (this.active) {
-      if (event.key in this.keyMap) {
-        this.keyMap[event.key].down()
+      const key = keycode(event)
+      if (key in this.keyMap) {
+        this.keyMap[key].down()
       }
     }
   }
 
   _keyUp(event) {
     if (this.active) {
-      if (event.key in this.keyMap) {
-        this.keyMap[event.key].up()
+      const key = keycode(event)
+      if (key in this.keyMap) {
+        this.keyMap[key].up()
       }
     }
   }
@@ -1561,12 +1565,164 @@ module.exports = Instrument
 
 /***/ }),
 /* 14 */
+/***/ (function(module, exports) {
+
+// Source: http://jsfiddle.net/vWx8V/
+// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
+
+/**
+ * Conenience method returns corresponding value for given keyName or keyCode.
+ *
+ * @param {Mixed} keyCode {Number} or keyName {String}
+ * @return {Mixed}
+ * @api public
+ */
+
+exports = module.exports = function(searchInput) {
+  // Keyboard Events
+  if (searchInput && 'object' === typeof searchInput) {
+    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode
+    if (hasKeyCode) searchInput = hasKeyCode
+  }
+
+  // Numbers
+  if ('number' === typeof searchInput) return names[searchInput]
+
+  // Everything else (cast to string)
+  var search = String(searchInput)
+
+  // check codes
+  var foundNamedKey = codes[search.toLowerCase()]
+  if (foundNamedKey) return foundNamedKey
+
+  // check aliases
+  var foundNamedKey = aliases[search.toLowerCase()]
+  if (foundNamedKey) return foundNamedKey
+
+  // weird character?
+  if (search.length === 1) return search.charCodeAt(0)
+
+  return undefined
+}
+
+/**
+ * Get by name
+ *
+ *   exports.code['enter'] // => 13
+ */
+
+var codes = exports.code = exports.codes = {
+  'backspace': 8,
+  'tab': 9,
+  'enter': 13,
+  'shift': 16,
+  'ctrl': 17,
+  'alt': 18,
+  'pause/break': 19,
+  'caps lock': 20,
+  'esc': 27,
+  'space': 32,
+  'page up': 33,
+  'page down': 34,
+  'end': 35,
+  'home': 36,
+  'left': 37,
+  'up': 38,
+  'right': 39,
+  'down': 40,
+  'insert': 45,
+  'delete': 46,
+  'command': 91,
+  'left command': 91,
+  'right command': 93,
+  'numpad *': 106,
+  'numpad +': 107,
+  'numpad -': 109,
+  'numpad .': 110,
+  'numpad /': 111,
+  'num lock': 144,
+  'scroll lock': 145,
+  'my computer': 182,
+  'my calculator': 183,
+  ';': 186,
+  '=': 187,
+  ',': 188,
+  '-': 189,
+  '.': 190,
+  '/': 191,
+  '`': 192,
+  '[': 219,
+  '\\': 220,
+  ']': 221,
+  "'": 222
+}
+
+// Helper aliases
+
+var aliases = exports.aliases = {
+  'windows': 91,
+  '⇧': 16,
+  '⌥': 18,
+  '⌃': 17,
+  '⌘': 91,
+  'ctl': 17,
+  'control': 17,
+  'option': 18,
+  'pause': 19,
+  'break': 19,
+  'caps': 20,
+  'return': 13,
+  'escape': 27,
+  'spc': 32,
+  'pgup': 33,
+  'pgdn': 34,
+  'ins': 45,
+  'del': 46,
+  'cmd': 91
+}
+
+
+/*!
+ * Programatically add the following
+ */
+
+// lower case chars
+for (i = 97; i < 123; i++) codes[String.fromCharCode(i)] = i - 32
+
+// numbers
+for (var i = 48; i < 58; i++) codes[i - 48] = i
+
+// function keys
+for (i = 1; i < 13; i++) codes['f'+i] = i + 111
+
+// numpad keys
+for (i = 0; i < 10; i++) codes['numpad '+i] = i + 96
+
+/**
+ * Get by code
+ *
+ *   exports.name[13] // => 'Enter'
+ */
+
+var names = exports.names = exports.title = {} // title for backward compat
+
+// Create reverse mapping
+for (i in codes) names[codes[i]] = i
+
+// Add aliases
+for (var alias in aliases) {
+  codes[alias] = aliases[alias]
+}
+
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(15);
+var content = __webpack_require__(16);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -1591,7 +1747,7 @@ if(false) {
 }
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -1605,7 +1761,7 @@ exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: 
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
@@ -4353,10 +4509,10 @@ exports.push([module.i, ".instrument-object {\n  display: flex;\n  align-items: 
 
 }).call(this);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)(module)))
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -4384,13 +4540,13 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(19);
+var content = __webpack_require__(20);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4415,7 +4571,7 @@ if(false) {
 }
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4429,7 +4585,7 @@ exports.push([module.i, "/* Not useful at the moment, or maybe ever;\n   the bro
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 class Point {
@@ -4455,10 +4611,10 @@ module.exports = Point
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(22)
+__webpack_require__(23)
 
 class Key {
   constructor(key, pitch, onDown, onUp, useColor) {
@@ -4506,13 +4662,13 @@ module.exports = Key
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(23);
+var content = __webpack_require__(24);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4537,7 +4693,7 @@ if(false) {
 }
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4551,7 +4707,7 @@ exports.push([module.i, ".key-object {\n  position: relative;\n  display: flex;\
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports) {
 
 class Synth {
@@ -4593,13 +4749,13 @@ module.exports = Synth
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(26);
+var content = __webpack_require__(27);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4624,7 +4780,7 @@ if(false) {
 }
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4638,10 +4794,10 @@ exports.push([module.i, ".overlay-object {\n  position: fixed;\n  top: 0;\n  z-i
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(28)
+__webpack_require__(29)
 const Pitch = __webpack_require__(3)
 const Canvas = __webpack_require__(4)
 const Overlay = __webpack_require__(2)
@@ -4719,13 +4875,13 @@ module.exports = Gallery
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(29);
+var content = __webpack_require__(30);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4750,7 +4906,7 @@ if(false) {
 }
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);
@@ -4764,10 +4920,10 @@ exports.push([module.i, ".gallery-object {\n  display: flex;\n  align-items: cen
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(31)
+__webpack_require__(32)
 
 class Button {
   constructor(text, onClick) {
@@ -4785,13 +4941,13 @@ module.exports = Button
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(32);
+var content = __webpack_require__(33);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -4816,7 +4972,7 @@ if(false) {
 }
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(0)(false);

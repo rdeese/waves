@@ -1,3 +1,5 @@
+const keycode = require('keycode');
+
 require('./instrument.less')
 
 const Pitch = require('./Pitch')
@@ -119,16 +121,18 @@ class Instrument {
 
   _keyDown(event) {
     if (this.active) {
-      if (event.key in this.keyMap) {
-        this.keyMap[event.key].down()
+      const key = keycode(event)
+      if (key in this.keyMap) {
+        this.keyMap[key].down()
       }
     }
   }
 
   _keyUp(event) {
     if (this.active) {
-      if (event.key in this.keyMap) {
-        this.keyMap[event.key].up()
+      const key = keycode(event)
+      if (key in this.keyMap) {
+        this.keyMap[key].up()
       }
     }
   }
