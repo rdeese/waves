@@ -1,46 +1,6 @@
 // (() => {
 let context;
 
-class Pitch {
-  static noteNumbers() {
-    return {
-      'A': 37,
-      'A#': 38,
-      'B': 39,
-      'C': 40,
-      'C#': 41,
-      'D': 42,
-      'D#': 43,
-      'E': 44,
-      'F': 45,
-      'F#': 46,
-      'G': 47,
-      'G#': 48,
-      "A'": 49
-    }
-  }
-
-  static frequencyFromNumber(noteNumber) {
-    return 440 * Math.pow(1.059463, noteNumber - 49)
-  }
-
-  constructor(arg) {
-    if (typeof(arg) === 'string') {
-      if (arg in Pitch.noteNumbers()) {
-        this.number = Pitch.noteNumbers()[arg]
-        this.note = arg
-      } else {
-        throw new Error('pitch constructed with invalid note name')
-      }
-    } else if (typeof(arg) === 'number') {
-      this.number = arg
-      this.note = Object.keys(Pitch.noteNumbers()).find(key => Pitch.noteNumbers()[key] === this.number)
-    }
-
-    this.frequency = Pitch.frequencyFromNumber(this.number)
-  }
-}
-
 class Point {
   constructor(x, y) {
     this.x = x
@@ -70,26 +30,24 @@ const Random = {
   }
 }
 
-const main = () => {
-  const canvas = document.getElementById('canvas')
+const moonrise = (horizonPosition, moonPosition, moonWavesFunction) => {
+  let canvas = document.createElement('canvas')
   context = canvas.getContext('2d')
-  let lastPoint = null
-  let secondLastPoint = null
 
   canvas.height = 500
   canvas.width = canvas.height*3
   const numPoints = 0.5*canvas.width*canvas.height
 
-  const earthRadius = 20000
-  const moonRadius = 60
+  const earthRadius = 40*canvas.height
+  const moonRadius = 0.12*canvas.height
 
-  const moonWavelength = 90
+  const moonWavelength = 0.18*canvas.height
   const earthWavelength = moonWavelength/64
 
   const canvasCenter = new Point(canvas.width/2, canvas.height/2)
-  const earthHorizonMiddle = canvasCenter.offset(0, -canvas.height/6-10) // canvas.height/6)
+  const earthHorizonMiddle = canvasCenter.offset(0, horizonPosition*canvas.height-10)
 
-  const moonCenter = canvasCenter.offset(0, canvas.height/10)
+  const moonCenter = canvasCenter.offset(0, moonPosition*canvas.height)
   const earthCenter = earthHorizonMiddle.offset(0, earthRadius)
 
   const randParams = [-2.5, 0.5]
@@ -99,7 +57,7 @@ const main = () => {
     let dot = Point.randomOnCanvas(canvas)
     let dist = dot.distanceFrom(earthCenter)
     if (dist > earthRadius && dot.distanceFrom(moonCenter) > moonRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {
-    // if (dist > earthRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {
+    // if (dist > earthRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {}
       context.fillRect(dot.x, dot.y, 1, 1)
     }
   }
@@ -109,24 +67,24 @@ const main = () => {
     let dot = Point.randomOnCanvas(canvas)
     let distFromMoonCenter = dot.distanceFrom(moonCenter)
     let distFromEarthCenter = dot.distanceFrom(earthCenter)
-    // if (distFromMoonCenter > moonRadius && distFromEarthCenter < earthRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
-    if (distFromEarthCenter < earthRadius && -Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
-    // if (distFromMoonCenter > moonRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
+    // if (distFromMoonCenter > moonRadius && distFromEarthCenter < earthRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {}
+    if (distFromEarthCenter < earthRadius && moonWavesFunction(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
+    // if (distFromMoonCenter > moonRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {}
       context.fillRect(dot.x, dot.y, 1, 1)
     }
   }
 
-  canvas.onclick = (event) => {
-    let point = Point.fromEvent(event)
-    context.fillText(`${point.x}, ${point.y}`, point.x, point.y);
-    if (lastPoint && secondLastPoint) {
-      context.moveTo(lastPoint.x, lastPoint.y)
-      context.quadraticCurveTo(point.x, point.y, secondLastPoint.x, secondLastPoint.y)
-      context.stroke()
-    }
-    secondLastPoint = lastPoint
-    lastPoint = point;
-  }
+  return canvas
+}
+
+
+const main = () => {
+  // moonrise 1
+  // let canvas = moonrise(-1/6, 1/10, (x) => -Math.cos(x))
+  // document.body.appendChild(canvas)
+  // moonrise 2
+  canvas = moonrise(1/10, -1/6, (x) => -Math.sin(x))
+  document.body.appendChild(canvas)
 }
 
 window.onload = main;
