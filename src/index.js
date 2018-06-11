@@ -73,27 +73,40 @@ const Random = {
 const main = () => {
   const canvas = document.getElementById('canvas')
   context = canvas.getContext('2d')
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
+  canvas.width = 800
+  canvas.height = 800
   let lastPoint = null
   let secondLastPoint = null
 
-  const canvasCenter = new Point(window.innerWidth/2, window.innerHeight/2)
-  const leftCenter = canvasCenter.offset(-200, 0)
-  const rightCenter = canvasCenter.offset(200, 0)
+  const earthRadius = 20000
+  const moonRadius = 60
 
-  context.fillStyle = "#FF0000"
-  for (let i = 0; i < 200000; i++) {
+  const moonWavelength = 200
+  const earthWavelength = moonWavelength/64
+
+  const canvasCenter = new Point(window.innerWidth/2, window.innerHeight/2)
+  const earthHorizonMiddle = canvasCenter.offset(0, 0)
+
+  const moonCenter = canvasCenter.offset(0, 0)
+  const earthCenter = earthHorizonMiddle.offset(0, earthRadius)
+
+  const randParams = [-2, 0.5]
+
+  // context.fillStyle = "#FF0000"
+  for (let i = 0; i < 800000; i++) {
     let dot = Point.randomOnCanvas()
-    if (Math.sin(dot.distanceFrom(leftCenter)/10) > Random.inRange(-3, 1)) {
+    let dist = dot.distanceFrom(earthCenter)
+    if (dist > earthRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {
       context.fillRect(dot.x, dot.y, 1, 1)
     }
   }
 
-  context.fillStyle = "#0000FF"
-  for (let i = 0; i < 200000; i++) {
+  // context.fillStyle = "#0000FF"
+  for (let i = 0; i < 800000; i++) {
     let dot = Point.randomOnCanvas()
-    if (Math.sin(dot.distanceFrom(rightCenter)/10) > Random.inRange(-3, 1)) {
+    let distFromMoonCenter = dot.distanceFrom(moonCenter)
+    let distFromEarthCenter = dot.distanceFrom(earthCenter)
+    if (distFromMoonCenter > moonRadius &&  Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
       context.fillRect(dot.x, dot.y, 1, 1)
     }
   }
