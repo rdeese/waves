@@ -89,17 +89,17 @@ const main = () => {
   const canvasCenter = new Point(canvas.width/2, canvas.height/2)
   const earthHorizonMiddle = canvasCenter.offset(0, 0) // canvas.height/6)
 
-  const moonCenter = canvasCenter.offset(0, -70)
+  const moonCenter = canvasCenter.offset(0, -canvas.height/4)
   const earthCenter = earthHorizonMiddle.offset(0, earthRadius-10)
 
-  const randParams = [-2, 0.5]
+  const randParams = [-2.5, 0.5]
 
   // context.fillStyle = "#FF0000"
   for (let i = 0; i < numPoints; i++) {
     let dot = Point.randomOnCanvas(canvas)
     let dist = dot.distanceFrom(earthCenter)
+    if (dist > earthRadius && dot.distanceFrom(moonCenter) > moonRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {
     // if (dist > earthRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {
-    if (dist > earthRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {
       context.fillRect(dot.x, dot.y, 1, 1)
     }
   }
@@ -109,7 +109,8 @@ const main = () => {
     let dot = Point.randomOnCanvas(canvas)
     let distFromMoonCenter = dot.distanceFrom(moonCenter)
     let distFromEarthCenter = dot.distanceFrom(earthCenter)
-    if (distFromMoonCenter > moonRadius && distFromEarthCenter < earthRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
+    // if (distFromMoonCenter > moonRadius && distFromEarthCenter < earthRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
+    if (distFromEarthCenter < earthRadius && -Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
     // if (distFromMoonCenter > moonRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
       context.fillRect(dot.x, dot.y, 1, 1)
     }
