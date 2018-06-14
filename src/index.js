@@ -93,8 +93,13 @@ const main = () => {
   canvas.width = canvas.height*3;
   let context = canvas.getContext('2d')
   context.font = '20px sans-serif'
-  context.fillText('Moonrise    Rupert Deese', 20, 20)
-  context.fillText('Scroll this way ->', canvas.width - 300, canvas.height - 40) 
+  context.fillText('Moonrise', 20, 20)
+  context.fillText('Rupert Deese', 20, 55)
+  context.fillText('2018', 20, 80)
+  const promptText = 'Scroll this way ->'
+  const promptTextXOffset = canvas.width - context.measureText(promptText).width - 20
+  console.log(promptTextXOffset)
+  context.fillText(promptText, promptTextXOffset, canvas.height - 40) 
   document.body.appendChild(canvas)
     
   // moonrise 1
@@ -111,12 +116,8 @@ const main = () => {
   document.body.appendChild(canvas)
 
   for (let index = 0; index < document.body.children.length; index++) {
-    console.log(document.body.children[index])
     document.body.children[index].style.padding = `${(window.innerHeight - canvas.height) / 2} ${(window.innerWidth - canvas.width) / 2}`
   }
-
-  document.body.style.width = document.body.children.length * canvas.width * 5/4
 }
 
 window.onload = main;
-// })();
