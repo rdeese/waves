@@ -70,46 +70,6 @@
 // (() => {
 let context;
 
-class Pitch {
-  static noteNumbers() {
-    return {
-      'A': 37,
-      'A#': 38,
-      'B': 39,
-      'C': 40,
-      'C#': 41,
-      'D': 42,
-      'D#': 43,
-      'E': 44,
-      'F': 45,
-      'F#': 46,
-      'G': 47,
-      'G#': 48,
-      "A'": 49
-    }
-  }
-
-  static frequencyFromNumber(noteNumber) {
-    return 440 * Math.pow(1.059463, noteNumber - 49)
-  }
-
-  constructor(arg) {
-    if (typeof(arg) === 'string') {
-      if (arg in Pitch.noteNumbers()) {
-        this.number = Pitch.noteNumbers()[arg]
-        this.note = arg
-      } else {
-        throw new Error('pitch constructed with invalid note name')
-      }
-    } else if (typeof(arg) === 'number') {
-      this.number = arg
-      this.note = Object.keys(Pitch.noteNumbers()).find(key => Pitch.noteNumbers()[key] === this.number)
-    }
-
-    this.frequency = Pitch.frequencyFromNumber(this.number)
-  }
-}
-
 class Point {
   constructor(x, y) {
     this.x = x
@@ -128,8 +88,8 @@ class Point {
     return new Point(event.clientX, event.clientY)
   }
 
-  static randomOnCanvas () {
-    return new Point(Math.random()*window.innerWidth, Math.random()*window.innerHeight)
+  static randomOnCanvas (canvas) {
+    return new Point(Math.random()*canvas.width, Math.random()*canvas.height)
   }
 }
 
@@ -139,45 +99,92 @@ const Random = {
   }
 }
 
-const main = () => {
-  const canvas = document.getElementById('canvas')
+const moonrise = (height, moonWavelengthRatio, horizonPosition, moonPosition, moonWavesFunction, showMoon = true) => {
+  let canvas = document.createElement('canvas')
   context = canvas.getContext('2d')
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
-  let lastPoint = null
-  let secondLastPoint = null
 
-  const canvasCenter = new Point(window.innerWidth/2, window.innerHeight/2)
-  const leftCenter = canvasCenter.offset(-200, 0)
-  const rightCenter = canvasCenter.offset(200, 0)
+  canvas.height = height
+  canvas.width = canvas.height*3
+  const numPoints = 0.5*canvas.width*canvas.height
 
-  context.fillStyle = "#FF0000"
-  for (let i = 0; i < 200000; i++) {
-    let dot = Point.randomOnCanvas()
-    if (Math.sin(dot.distanceFrom(leftCenter)/10) > Random.inRange(-3, 1)) {
+  const earthRadius = 40*canvas.height
+  const moonRadius = 0.12*canvas.height
+
+  const moonWavelength = moonWavelengthRatio*canvas.height
+  const earthWavelength = moonWavelength/64
+
+  const canvasCenter = new Point(canvas.width/2, canvas.height/2)
+  const earthHorizonMiddle = canvasCenter.offset(0, horizonPosition*canvas.height-10)
+
+  const moonCenter = canvasCenter.offset(0, moonPosition*canvas.height)
+  const earthCenter = earthHorizonMiddle.offset(0, earthRadius)
+
+  const randParams = [-2.5, 0.5]
+
+  // context.fillStyle = "#FF0000"
+  for (let i = 0; i < numPoints; i++) {
+    let dot = Point.randomOnCanvas(canvas)
+    let dist = dot.distanceFrom(earthCenter)
+    if (dist > earthRadius && (!showMoon || dot.distanceFrom(moonCenter) > moonRadius) && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {
+    // if (dist > earthRadius && Math.sin(dist/earthWavelength) > Random.inRange(...randParams)) {}
       context.fillRect(dot.x, dot.y, 1, 1)
     }
   }
 
-  context.fillStyle = "#0000FF"
-  for (let i = 0; i < 200000; i++) {
-    let dot = Point.randomOnCanvas()
-    if (Math.sin(dot.distanceFrom(rightCenter)/10) > Random.inRange(-3, 1)) {
+  // context.fillStyle = "#0000FF"
+  for (let i = 0; i < numPoints; i++) {
+    let dot = Point.randomOnCanvas(canvas)
+    let distFromMoonCenter = dot.distanceFrom(moonCenter)
+    let distFromEarthCenter = dot.distanceFrom(earthCenter)
+    // if (distFromMoonCenter > moonRadius && distFromEarthCenter < earthRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {}
+    if (distFromEarthCenter < earthRadius && moonWavesFunction(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {
+    // if (distFromMoonCenter > moonRadius && Math.cos(distFromMoonCenter/moonWavelength) > Random.inRange(...randParams)) {}
       context.fillRect(dot.x, dot.y, 1, 1)
     }
   }
 
-  canvas.onclick = (event) => {
-    let point = Point.fromEvent(event)
-    context.fillText(`${point.x}, ${point.y}`, point.x, point.y);
-    if (lastPoint && secondLastPoint) {
-      context.moveTo(lastPoint.x, lastPoint.y)
-      context.quadraticCurveTo(point.x, point.y, secondLastPoint.x, secondLastPoint.y)
-      context.stroke()
-    }
-    secondLastPoint = lastPoint
-    lastPoint = point;
+  return canvas
+}
+
+
+const main = () => {
+  const aspectRatio = window.innerWidth / window.innerHeight
+  let height;
+  if (aspectRatio >= 3) { // height is limiting
+    height = window.innerHeight - window.innerHeight / 5
+  } else { // width is limiting
+    height = (window.innerWidth - window.innerWidth / 5) / 3
   }
+
+  // intro
+  let canvas = document.createElement('canvas')
+  canvas.height = height;
+  canvas.width = canvas.height*3;
+  let context = canvas.getContext('2d')
+  context.font = '20px sans-serif'
+  context.fillText('Moonrise    Rupert Deese', 20, 20)
+  context.fillText('Scroll this way ->', canvas.width - 300, canvas.height - 40) 
+  document.body.appendChild(canvas)
+    
+  // moonrise 1
+  canvas = moonrise(height, 0.2, 0, -1/7, (x) => Math.cos(x), false)
+  document.body.appendChild(canvas)
+  // moonrise 2
+  canvas = moonrise(height, 0.2, 0, -1/4, (x) => -Math.cos(x))
+  document.body.appendChild(canvas)
+  // moonrise 3
+  canvas = moonrise(height, 0.18, -1/6, 1/10, (x) => -Math.cos(x))
+  document.body.appendChild(canvas)
+  // moonrise 4
+  canvas = moonrise(height, 0.18, 1/10, -1/6, (x) => -Math.sin(x))
+  document.body.appendChild(canvas)
+
+  for (let index = 0; index < document.body.children.length; index++) {
+    console.log(document.body.children[index])
+    document.body.children[index].style.padding = `${(window.innerHeight - canvas.height) / 2} ${(window.innerWidth - canvas.width) / 2}`
+  }
+
+  document.body.style.width = document.body.children.length * canvas.width * 5/4
 }
 
 window.onload = main;
