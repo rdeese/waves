@@ -50,18 +50,25 @@ class Gallery {
     `
     this.html.appendChild(introText)
 
-    for (let i in pitches) {
-      const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor, this.highDef)
-      canvas.html.style.position = 'relative'
-      const wrapperDiv = document.createElement('div')
-      wrapperDiv.classList.add('canvas-wrapper')
-      wrapperDiv.appendChild(canvas.html)
-      const titleDiv = document.createElement('div')
-      titleDiv.classList.add('title')
-      canvas.html.appendChild(titleDiv)
-      titleDiv.innerText = `${pitches[i].note} / ${pitches[0].note}`
-      this.html.appendChild(wrapperDiv)
-    }
+    // for (let i in pitches) {
+    //   const canvas = Canvas.fromPitches([pitches[0], pitches[i]], width, height, this.useColor, this.highDef)
+    //   canvas.html.style.position = 'relative'
+    //   const wrapperDiv = document.createElement('div')
+    //   wrapperDiv.classList.add('canvas-wrapper')
+    //   wrapperDiv.appendChild(canvas.html)
+    //   const titleDiv = document.createElement('div')
+    //   titleDiv.classList.add('title')
+    //   canvas.html.appendChild(titleDiv)
+    //   titleDiv.innerText = `${pitches[i].note} / ${pitches[0].note}`
+    //   this.html.appendChild(wrapperDiv)
+    // }
+
+    const canvas = Canvas.vesicaPiscis(1200, 1200);
+    canvas.html.style.position = 'relative'
+    const data = canvas.canvas.toDataURL('image/png')
+    document.write('<img src="'+data+'"/>')
+
+
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {

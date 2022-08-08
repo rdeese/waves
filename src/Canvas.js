@@ -43,6 +43,36 @@ class Canvas {
     }
   }
 
+  drawVesicaPiscis(lightness, separation, focusDist, frequency, focusWindow, focusPower) {
+    this.context.fillStyle = 'black'
+
+    const leftCenter = this.center().offset(-separation/2, 0)
+    const rightCenter = this.center().offset(separation/2, 0)
+    const numDots = this.numDots*lightness;
+
+    for (let i = 0; i < numDots; i++) {
+      const dot = this.randomPoint()
+      const distanceFromCenter = dot.distanceFrom(leftCenter)
+      if (
+        Math.sin(distanceFromCenter*frequency) > Random.inRange(-1, 1) &&
+        Math.pow(Math.abs(distanceFromCenter - focusDist), focusPower) < Random.inRange(0, focusWindow)
+      ) {
+        this.context.fillRect(dot.x, dot.y, 0.8, 0.8)
+      }
+    }
+
+    for (let i = 0; i < numDots; i++) {
+      const dot = this.randomPoint()
+      const distanceFromCenter = dot.distanceFrom(rightCenter)
+      if (
+        Math.sin(distanceFromCenter*frequency) > Random.inRange(-1, 1) &&
+        Math.pow(Math.abs(distanceFromCenter - focusDist), focusPower) < Random.inRange(0, focusWindow)
+      ) {
+        this.context.fillRect(dot.x, dot.y, 0.8, 0.8)
+      }
+    }
+  }
+
   static fromPitches(pitches, width, height, useColor, highDef) {
     const canvasElement = document.createElement('canvas')
     canvasElement.width = width
@@ -54,6 +84,16 @@ class Canvas {
     }
 
     return canvas
+  }
+
+  static vesicaPiscis(width, height) {
+    const canvasElement = document.createElement('canvas')
+    canvasElement.width = width
+    canvasElement.height = height
+    const canvas = new Canvas(canvasElement, false, true)
+    canvas.drawVesicaPiscis(1/4, 200, 200, 0.2, 3, 1/5)
+    canvas.drawVesicaPiscis(1, 200, 200, 0.2, 3.5, 1/3)
+    return canvas;
   }
 
   // Potentially for another class
