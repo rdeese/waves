@@ -91,8 +91,8 @@ class Canvas {
     canvasElement.width = width
     canvasElement.height = height
     const canvas = new Canvas(canvasElement, false, true)
-    canvas.drawVesicaPiscis(1/4, 200, 200, 0.2, 3, 1/5)
-    canvas.drawVesicaPiscis(1, 200, 200, 0.2, 3.5, 1/3)
+    canvas.drawVesicaPiscis(.75, width/6, width/6, 240/width, 3, 1/5)
+    canvas.drawVesicaPiscis(4, width/6, width/6, 240/width, 3.5, 1/2.5)
     return canvas;
   }
 
